@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Home, 
   User, 
@@ -27,10 +26,10 @@ interface UserDashboardProps {
 }
 
 const UserDashboard = ({ user }: UserDashboardProps) => {
-  const { logout } = useAuth();
+  const { logout, loading } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
   };
 
   const getRoleColor = (role: string) => {
@@ -98,9 +97,14 @@ const UserDashboard = ({ user }: UserDashboardProps) => {
                 </div>
               </div>
               
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                disabled={loading}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                {loading ? 'Logging out...' : 'Logout'}
               </Button>
             </div>
           </div>

@@ -1,5 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 export interface User {
   id: string;
@@ -16,10 +18,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
 interface RegisterData {
@@ -43,128 +46,197 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const isAuthenticated = !!user && !!session;
+
+  // Convert Supabase user + profile to our User type
+  const convertToUser = async (supabaseUser: SupabaseUser): Promise<User | null> => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (error || !profile) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return {
+        id: profile.id,
+        email: profile.email,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        role: profile.role as 'tenant' | 'landlord' | 'admin',
+        isVerified: profile.is_verified,
+        phone: profile.phone,
+        avatar: profile.avatar_url,
+        createdAt: new Date(profile.created_at)
+      };
+    } catch (error) {
+      console.error('Error converting user:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    // Check for existing user session on app load
-    const savedUser = localStorage.getItem('rentkenya_user');
-    if (savedUser) {
+    // Get initial session
+    const getInitialSession = async () => {
       try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (session?.user) {
+          setSession(session);
+          const userData = await convertToUser(session.user);
+          setUser(userData);
+        }
       } catch (error) {
-        console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('rentkenya_user');
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        
+        if (session?.user) {
+          // Defer user profile fetch to avoid potential recursion
+          setTimeout(async () => {
+            const userData = await convertToUser(session.user);
+            setUser(userData);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      // Get users from localStorage (simulating database)
-      const users = JSON.parse(localStorage.getItem('rentkenya_users') || '[]');
-      const existingUser = users.find((u: any) => u.email === email);
-
-      if (!existingUser) {
-        return { success: false, error: 'User not found' };
+      if (error) {
+        return { success: false, error: error.message };
       }
 
-      // In a real app, you would hash and compare passwords
-      if (existingUser.password !== password) {
-        return { success: false, error: 'Invalid password' };
+      if (data.user) {
+        const userData = await convertToUser(data.user);
+        if (userData) {
+          setUser(userData);
+          setSession(data.session);
+          return { success: true };
+        } else {
+          return { success: false, error: 'Failed to load user profile' };
+        }
       }
 
-      const userData: User = {
-        id: existingUser.id,
-        email: existingUser.email,
-        firstName: existingUser.firstName,
-        lastName: existingUser.lastName,
-        role: existingUser.role,
-        isVerified: existingUser.isVerified || false,
-        phone: existingUser.phone,
-        createdAt: new Date(existingUser.createdAt)
-      };
-
-      setUser(userData);
-      setIsAuthenticated(true);
-      localStorage.setItem('rentkenya_user', JSON.stringify(userData));
-
-      return { success: true };
+      return { success: false, error: 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: 'Login failed. Please try again.' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            role: userData.role,
+            phone: userData.phone
+          }
+        }
+      });
 
-      // Get existing users from localStorage
-      const users = JSON.parse(localStorage.getItem('rentkenya_users') || '[]');
-      
-      // Check if user already exists
-      const existingUser = users.find((u: any) => u.email === userData.email);
-      if (existingUser) {
-        return { success: false, error: 'User with this email already exists' };
+      if (error) {
+        return { success: false, error: error.message };
       }
 
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        email: userData.email,
-        password: userData.password, // In real app, this would be hashed
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        role: userData.role,
-        phone: userData.phone,
-        isVerified: false,
-        createdAt: new Date().toISOString()
-      };
-
-      // Save to localStorage (simulating database)
-      users.push(newUser);
-      localStorage.setItem('rentkenya_users', JSON.stringify(users));
-
-      // Create user session
-      const userSession: User = {
-        id: newUser.id,
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        role: newUser.role,
-        isVerified: newUser.isVerified,
-        phone: newUser.phone,
-        createdAt: new Date(newUser.createdAt)
-      };
-
-      setUser(userSession);
-      setIsAuthenticated(true);
-      localStorage.setItem('rentkenya_user', JSON.stringify(userSession));
+      if (data.user) {
+        // User profile will be created automatically by the trigger
+        // Wait a moment for the profile to be created
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const userData = await convertToUser(data.user);
+        if (userData) {
+          setUser(userData);
+          setSession(data.session);
+          return { success: true };
+        }
+      }
 
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
       return { success: false, error: 'Registration failed. Please try again.' };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('rentkenya_user');
+  const logout = async () => {
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('rentkenya_user', JSON.stringify(updatedUser));
+  const updateUser = async (userData: Partial<User>) => {
+    if (!user) return;
+
+    try {
+      const updateData: any = {};
+      if (userData.firstName) updateData.first_name = userData.firstName;
+      if (userData.lastName) updateData.last_name = userData.lastName;
+      if (userData.phone) updateData.phone = userData.phone;
+      if (userData.avatar) updateData.avatar_url = userData.avatar;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        return;
+      }
+
+      // Update local user state
+      setUser(prev => prev ? { ...prev, ...userData } : null);
+    } catch (error) {
+      console.error('Update user error:', error);
     }
   };
 
@@ -172,6 +244,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       isAuthenticated,
+      loading,
       login,
       register,
       logout,

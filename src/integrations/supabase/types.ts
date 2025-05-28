@@ -9,7 +9,249 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          property_id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          property_id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          property_id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          first_name: string
+          id: string
+          is_verified: boolean | null
+          last_name: string
+          phone: string | null
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
+          id: string
+          is_verified?: boolean | null
+          last_name: string
+          phone?: string | null
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          is_verified?: boolean | null
+          last_name?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          amenities: string[] | null
+          bathrooms: number
+          bedrooms: number
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          is_available: boolean | null
+          is_furnished: boolean | null
+          is_pet_friendly: boolean | null
+          landlord_id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          price: number
+          property_type: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          bathrooms: number
+          bedrooms: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          is_furnished?: boolean | null
+          is_pet_friendly?: boolean | null
+          landlord_id: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          price: number
+          property_type: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: string[] | null
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          is_furnished?: boolean | null
+          is_pet_friendly?: boolean | null
+          landlord_id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          price?: number
+          property_type?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          property_id: string
+          rating: number
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          property_id: string
+          rating: number
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          rating?: number
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

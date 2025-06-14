@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   Search, 
   MapPin, 
@@ -19,7 +20,8 @@ import {
   LogIn,
   CheckCircle,
   TrendingUp,
-  Users
+  Users,
+  AlertTriangle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
@@ -139,6 +141,19 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Safety Disclaimer */}
+      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Alert className="border-red-400 bg-red-50/10 backdrop-blur-sm">
+            <AlertTriangle className="h-5 w-5 text-red-200" />
+            <AlertTitle className="text-red-100 font-semibold">Important Safety Notice</AlertTitle>
+            <AlertDescription className="text-red-100">
+              <strong>NEVER pay for a property you haven't physically visited.</strong> Always inspect the property in person before making any payments. Verify the landlord's identity and ownership documents. RentKenya and its owners are not liable for any financial losses resulting from fraudulent transactions.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </section>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
         <div className="absolute inset-0 opacity-50" style={{
@@ -212,6 +227,17 @@ const Index = () => {
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Discover the most sought-after rental homes in prime locations across Kenya
             </p>
+          </div>
+
+          {/* Fraud Prevention Notice */}
+          <div className="mb-12">
+            <Alert className="border-amber-200 bg-amber-50">
+              <Shield className="h-5 w-5 text-amber-600" />
+              <AlertTitle className="text-amber-800">Protect Yourself from Fraud</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                <strong>Before making any payment:</strong> Always visit the property in person, verify the landlord's identity, check ownership documents, and never send money to unverified accounts. Use secure payment methods and get receipts for all transactions.
+              </AlertDescription>
+            </Alert>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -307,7 +333,7 @@ const Index = () => {
           </h2>
           <p className="text-xl text-blue-100 mb-8 leading-relaxed">
             Join thousands of satisfied tenants who found their perfect rental through RentKenya. 
-            Start your journey today - it&apos;s completely free!
+            Start your journey today - it's completely free!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -331,6 +357,38 @@ const Index = () => {
             >
               Already Have an Account?
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Disclaimer Footer */}
+      <section className="bg-slate-800 text-slate-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-4">Important Disclaimer</h3>
+              <p className="text-slate-400 leading-relaxed mb-4">
+                RentKenya serves as a platform connecting property owners and potential tenants. We are not responsible for any fraudulent activities, misrepresentations, or financial losses that may occur during property transactions.
+              </p>
+              <p className="text-slate-400 leading-relaxed">
+                Users are solely responsible for verifying property details, landlord credentials, and conducting due diligence before entering into any rental agreements or making payments.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-4">Stay Safe</h3>
+              <ul className="text-slate-400 space-y-2">
+                <li>• Always inspect properties physically before payment</li>
+                <li>• Verify landlord identity and ownership documents</li>
+                <li>• Use secure payment methods with proper receipts</li>
+                <li>• Report suspicious listings or activities immediately</li>
+                <li>• Never share personal financial information unsolicited</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-slate-700 mt-8 pt-8 text-center">
+            <p className="text-slate-500">
+              © 2024 RentKenya. All rights reserved. By using this platform, you agree to our terms of service and acknowledge our liability limitations.
+            </p>
           </div>
         </div>
       </section>

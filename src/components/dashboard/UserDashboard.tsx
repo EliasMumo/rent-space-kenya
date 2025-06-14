@@ -99,11 +99,6 @@ const UserDashboard = ({ user }: UserDashboardProps) => {
                       {getRoleIcon(user.role)}
                       <span className="ml-1 capitalize">{user.role}</span>
                     </Badge>
-                    {!user.isVerified && (
-                      <Badge variant="destructive" className="text-xs">
-                        Unverified
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </div>

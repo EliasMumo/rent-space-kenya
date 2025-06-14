@@ -79,26 +79,6 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Verification Status */}
-      {!user.isVerified && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-yellow-800 flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2" />
-              Account Verification Required
-            </CardTitle>
-            <CardDescription className="text-yellow-700">
-              Complete your KYC verification to start posting properties and build trust with tenants.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="bg-yellow-600 hover:bg-yellow-700">
-              Start Verification Process
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>

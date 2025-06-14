@@ -1,13 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PropertyCard from "./PropertyCard";
-import { Search, Filter, MapPin, Home } from "lucide-react";
+import PropertyFilters from "./PropertyFilters";
+import { Card, CardContent } from "@/components/ui/card";
+import { Home } from "lucide-react";
 
 interface Property {
   id: string;
@@ -42,8 +40,10 @@ const PropertiesGrid = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [priceRange, setPriceRange] = useState("");
   const [bedroomFilter, setBedroomFilter] = useState("");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [moveInDate, setMoveInDate] = useState("");
 
   useEffect(() => {
     fetchProperties();
@@ -100,6 +100,11 @@ const PropertiesGrid = () => {
     });
   };
 
+  const handleSearch = () => {
+    // This function can be enhanced to trigger specific search queries
+    console.log('Search triggered with current filters');
+  };
+
   const filteredProperties = properties.filter(property => {
     const matchesSearch = searchQuery === "" || 
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -113,13 +118,16 @@ const PropertiesGrid = () => {
     const matchesBedrooms = bedroomFilter === "" || 
       property.bedrooms.toString() === bedroomFilter;
     
-    let matchesPrice = true;
-    if (priceRange) {
-      const [min, max] = priceRange.split('-').map(Number);
-      matchesPrice = property.price >= min && (max ? property.price <= max : true);
-    }
+    const matchesPrice = property.price >= priceRange[0] && property.price <= priceRange[1];
 
-    return matchesSearch && matchesLocation && matchesType && matchesBedrooms && matchesPrice;
+    const matchesAmenities = selectedAmenities.length === 0 || 
+      selectedAmenities.every(amenity => property.amenities?.includes(amenity));
+
+    // Move-in date filtering can be enhanced with actual availability data
+    const matchesMoveInDate = moveInDate === "" || true; // Placeholder for now
+
+    return matchesSearch && matchesLocation && matchesType && 
+           matchesBedrooms && matchesPrice && matchesAmenities && matchesMoveInDate;
   });
 
   if (loading) {
@@ -145,87 +153,23 @@ const PropertiesGrid = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Search and Filters */}
-      <div className="mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            <div className="lg:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search properties..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Locations</SelectItem>
-                  <SelectItem value="kilimani">Kilimani</SelectItem>
-                  <SelectItem value="karen">Karen</SelectItem>
-                  <SelectItem value="westlands">Westlands</SelectItem>
-                  <SelectItem value="lavington">Lavington</SelectItem>
-                  <SelectItem value="kileleshwa">Kileleshwa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
-                  <SelectItem value="apartment">Apartment</SelectItem>
-                  <SelectItem value="house">House</SelectItem>
-                  <SelectItem value="studio">Studio</SelectItem>
-                  <SelectItem value="villa">Villa</SelectItem>
-                  <SelectItem value="townhouse">Townhouse</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Select value={bedroomFilter} onValueChange={setBedroomFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Bedrooms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
-                  <SelectItem value="1">1 Bedroom</SelectItem>
-                  <SelectItem value="2">2 Bedrooms</SelectItem>
-                  <SelectItem value="3">3 Bedrooms</SelectItem>
-                  <SelectItem value="4">4+ Bedrooms</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Select value={priceRange} onValueChange={setPriceRange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Price Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any Price</SelectItem>
-                  <SelectItem value="0-30000">Under 30K</SelectItem>
-                  <SelectItem value="30000-50000">30K - 50K</SelectItem>
-                  <SelectItem value="50000-80000">50K - 80K</SelectItem>
-                  <SelectItem value="80000-120000">80K - 120K</SelectItem>
-                  <SelectItem value="120000">120K+</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PropertyFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        locationFilter={locationFilter}
+        setLocationFilter={setLocationFilter}
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        bedroomFilter={bedroomFilter}
+        setBedroomFilter={setBedroomFilter}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        selectedAmenities={selectedAmenities}
+        setSelectedAmenities={setSelectedAmenities}
+        moveInDate={moveInDate}
+        setMoveInDate={setMoveInDate}
+        onSearch={handleSearch}
+      />
 
       {/* Results Header */}
       <div className="flex justify-between items-center mb-6">

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -186,7 +187,10 @@ const Index = () => {
                       />
                     </div>
                   </div>
-                  <Button variant="outline" className="h-14 px-6 border-slate-200 hover:bg-slate-50">
+                  <Button 
+                    variant="outline" 
+                    className="h-14 px-6 border-purple-200 hover:bg-purple-50 hover:border-purple-300 text-purple-700"
+                  >
                     <Filter className="h-5 w-5 mr-2" />
                     Filters
                   </Button>
@@ -253,7 +257,7 @@ const Index = () => {
                 setAuthMode('register');
                 setAuthModalOpen(true);
               }}
-              className="px-8 py-3 text-lg border-slate-300 hover:bg-slate-100"
+              className="px-8 py-3 text-lg border-purple-300 hover:bg-purple-50 hover:border-purple-400 text-purple-700"
             >
               View All Properties
             </Button>
@@ -341,7 +345,7 @@ const Index = () => {
                 setAuthMode('register');
                 setAuthModalOpen(true);
               }}
-              className="bg-white text-purple-600 hover:bg-slate-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-white text-purple-600 hover:bg-slate-50 hover:text-purple-700 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Start Searching Now
             </Button>

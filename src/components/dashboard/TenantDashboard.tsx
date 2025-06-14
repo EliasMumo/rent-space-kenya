@@ -23,23 +23,46 @@ interface TenantDashboardProps {
   user: User;
 }
 
+// Define a proper interface for the Property type used in this component
+interface SampleProperty {
+  id: string;
+  title: string;
+  description: string;
+  property_type: string;
+  location: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  is_furnished: boolean;
+  is_pet_friendly: boolean;
+  is_available: boolean;
+  amenities: string[];
+  images: string[];
+  created_at: string;
+  landlord_id: string;
+}
+
 const TenantDashboard = ({ user }: TenantDashboardProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Sample data
-  const savedProperties = [
+  // Sample data with proper Property interface
+  const savedProperties: SampleProperty[] = [
     {
-      id: 1,
+      id: "1",
       title: "Modern 2BR Apartment in Kilimani",
+      description: "Spacious and modern apartment with great views and amenities.",
+      property_type: "apartment",
       location: "Kilimani, Nairobi",
       price: 55000,
       bedrooms: 2,
       bathrooms: 2,
-      images: ["/placeholder.svg"],
-      rating: 4.8,
-      reviews: 24,
+      is_furnished: true,
+      is_pet_friendly: false,
+      is_available: true,
       amenities: ["Wi-Fi", "Parking", "Water", "Security"],
-      available: true
+      images: ["/placeholder.svg"],
+      created_at: new Date().toISOString(),
+      landlord_id: "landlord1"
     }
   ];
 
@@ -49,32 +72,40 @@ const TenantDashboard = ({ user }: TenantDashboardProps) => {
     "Bedsitter in Kasarani"
   ];
 
-  const suggestedProperties = [
+  const suggestedProperties: SampleProperty[] = [
     {
-      id: 2,
+      id: "2",
       title: "Spacious 3BR House in Karen",
+      description: "Beautiful house with a large garden and secure compound.",
+      property_type: "house",
       location: "Karen, Nairobi",
       price: 85000,
       bedrooms: 3,
       bathrooms: 3,
-      images: ["/placeholder.svg"],
-      rating: 4.9,
-      reviews: 18,
+      is_furnished: false,
+      is_pet_friendly: true,
+      is_available: true,
       amenities: ["Wi-Fi", "Garden", "Parking", "Security"],
-      available: true
+      images: ["/placeholder.svg"],
+      created_at: new Date().toISOString(),
+      landlord_id: "landlord2"
     },
     {
-      id: 3,
+      id: "3",
       title: "1BR Apartment in Westlands",
+      description: "Compact and well-maintained apartment in a prime location.",
+      property_type: "apartment",
       location: "Westlands, Nairobi",
       price: 35000,
       bedrooms: 1,
       bathrooms: 1,
-      images: ["/placeholder.svg"],
-      rating: 4.5,
-      reviews: 12,
+      is_furnished: true,
+      is_pet_friendly: false,
+      is_available: true,
       amenities: ["Wi-Fi", "Parking", "Water"],
-      available: true
+      images: ["/placeholder.svg"],
+      created_at: new Date().toISOString(),
+      landlord_id: "landlord3"
     }
   ];
 

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModal";
 import UserDashboard from "@/components/dashboard/UserDashboard";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,7 +22,8 @@ import {
   Users,
   Bed,
   Bath,
-  ArrowRight
+  ArrowRight,
+  Phone
 } from "lucide-react";
 
 const Index = () => {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,8 @@ interface Property {
   amenities: string[];
   images: string[];
   created_at: string;
+  views?: number;
+  inquiries?: number;
 }
 
 const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
@@ -340,11 +343,11 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center">
                             <Eye className="h-4 w-4 mr-1" />
-                            0 views
+                            {property.views || 0} views
                           </div>
                           <div className="flex items-center">
                             <MessageSquare className="h-4 w-4 mr-1" />
-                            0 inquiries
+                            {property.inquiries || 0} inquiries
                           </div>
                         </div>
                         
@@ -385,11 +388,9 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex space-x-4">
-                      <img 
-                        src={property.images[0]} 
-                        alt={property.title}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
+                        <Home className="h-8 w-8 text-purple-500" />
+                      </div>
                       <div className="space-y-1">
                         <h3 className="font-semibold text-lg">{property.title}</h3>
                         <p className="text-gray-600">{property.location}</p>
@@ -407,11 +408,11 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Eye className="h-4 w-4 mr-1" />
-                          {property.views} views
+                          {property.views || 0} views
                         </div>
                         <div className="flex items-center">
                           <MessageSquare className="h-4 w-4 mr-1" />
-                          {property.inquiries} inquiries
+                          {property.inquiries || 0} inquiries
                         </div>
                       </div>
                       
@@ -444,11 +445,9 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex space-x-4">
-                      <img 
-                        src={property.images[0]} 
-                        alt={property.title}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
+                        <Home className="h-8 w-8 text-purple-500" />
+                      </div>
                       <div className="space-y-1">
                         <h3 className="font-semibold text-lg">{property.title}</h3>
                         <p className="text-gray-600">{property.location}</p>
@@ -466,11 +465,11 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Eye className="h-4 w-4 mr-1" />
-                          {property.views} views
+                          {property.views || 0} views
                         </div>
                         <div className="flex items-center">
                           <MessageSquare className="h-4 w-4 mr-1" />
-                          {property.inquiries} inquiries
+                          {property.inquiries || 0} inquiries
                         </div>
                       </div>
                       

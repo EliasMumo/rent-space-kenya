@@ -1,6 +1,5 @@
-
 import { useAuth } from "@/hooks/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModal";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";

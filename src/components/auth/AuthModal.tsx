@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +38,8 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
     firstName: '',
     lastName: '',
     phone: '',
+    caretakerPhone: '',
+    displayPhonePreference: 'owner' as 'owner' | 'caretaker',
     role: 'tenant' as 'tenant' | 'landlord'
   });
 
@@ -87,12 +90,21 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
       return;
     }
 
+    // If caretaker phone is provided but display preference is caretaker, validate caretaker phone
+    if (registerForm.role === 'landlord' && registerForm.displayPhonePreference === 'caretaker' && !registerForm.caretakerPhone.trim()) {
+      setError('Caretaker phone number is required when set as display preference');
+      setIsLoading(false);
+      return;
+    }
+
     const result = await register({
       email: registerForm.email,
       password: registerForm.password,
       firstName: registerForm.firstName,
       lastName: registerForm.lastName,
       phone: registerForm.phone,
+      caretakerPhone: registerForm.caretakerPhone,
+      displayPhonePreference: registerForm.displayPhonePreference,
       role: registerForm.role
     });
 
@@ -110,6 +122,8 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
         firstName: '',
         lastName: '',
         phone: '',
+        caretakerPhone: '',
+        displayPhonePreference: 'owner',
         role: 'tenant'
       });
     } else {
@@ -299,6 +313,57 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
                       </p>
                     )}
                   </div>
+
+                  {registerForm.role === 'landlord' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="caretakerPhone">
+                          Caretaker Phone Number <span className="text-gray-500">(Optional)</span>
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            id="caretakerPhone"
+                            type="tel"
+                            placeholder="+254 700 000 000"
+                            value={registerForm.caretakerPhone}
+                            onChange={(e) => setRegisterForm(prev => ({ ...prev, caretakerPhone: e.target.value }))}
+                            className="pl-10"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Add a caretaker's contact number for property management
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Which number should tenants call?</Label>
+                        <RadioGroup 
+                          value={registerForm.displayPhonePreference} 
+                          onValueChange={(value: 'owner' | 'caretaker') => 
+                            setRegisterForm(prev => ({ ...prev, displayPhonePreference: value }))
+                          }
+                          className="space-y-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="owner" id="owner" />
+                            <Label htmlFor="owner">My phone number</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem 
+                              value="caretaker" 
+                              id="caretaker" 
+                              disabled={!registerForm.caretakerPhone.trim()}
+                            />
+                            <Label htmlFor="caretaker" className={!registerForm.caretakerPhone.trim() ? 'text-gray-400' : ''}>
+                              Caretaker's phone number
+                              {!registerForm.caretakerPhone.trim() && <span className="text-sm"> (Enter caretaker number first)</span>}
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="register-password">Password</Label>

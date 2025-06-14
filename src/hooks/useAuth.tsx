@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -32,6 +31,8 @@ interface RegisterData {
   lastName: string;
   role: 'tenant' | 'landlord';
   phone?: string;
+  caretakerPhone?: string;
+  displayPhonePreference?: 'owner' | 'caretaker';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -169,7 +170,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             first_name: userData.firstName,
             last_name: userData.lastName,
             role: userData.role,
-            phone: userData.phone
+            phone: userData.phone,
+            caretaker_phone: userData.caretakerPhone,
+            display_phone_preference: userData.displayPhonePreference
           }
         }
       });

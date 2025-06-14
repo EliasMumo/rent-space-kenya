@@ -1,9 +1,11 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Plus, 
   Home, 
@@ -13,69 +15,181 @@ import {
   TrendingUp,
   Settings,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { User } from "@/hooks/useAuth";
+import PropertyForm from "../properties/PropertyForm";
 
 interface LandlordDashboardProps {
   user: User;
 }
 
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  property_type: string;
+  location: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  is_furnished: boolean;
+  is_pet_friendly: boolean;
+  is_available: boolean;
+  amenities: string[];
+  images: string[];
+  created_at: string;
+}
+
 const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
-  // Sample data
-  const properties = [
-    {
-      id: 1,
-      title: "Modern 2BR Apartment in Kilimani",
-      location: "Kilimani, Nairobi",
-      price: 55000,
-      status: "available",
-      views: 156,
-      inquiries: 8,
-      images: ["/placeholder.svg"]
-    },
-    {
-      id: 2,
-      title: "Spacious 3BR House in Karen",
-      location: "Karen, Nairobi", 
-      price: 85000,
-      status: "rented",
-      views: 89,
-      inquiries: 12,
-      images: ["/placeholder.svg"]
+  const { toast } = useToast();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
+
+  useEffect(() => {
+    fetchProperties();
+  }, [user.id]);
+
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('landlord_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching properties:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load properties",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setProperties(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handlePropertyCreated = () => {
+    setShowPropertyForm(false);
+    fetchProperties();
+  };
+
+  const togglePropertyAvailability = async (propertyId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .update({ is_available: !currentStatus })
+        .eq('id', propertyId);
+
+      if (error) {
+        console.error('Error updating property:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update property status",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `Property ${!currentStatus ? 'listed' : 'unlisted'} successfully`
+      });
+      
+      fetchProperties();
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteProperty = async (propertyId: string) => {
+    if (!confirm('Are you sure you want to delete this property?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', propertyId);
+
+      if (error) {
+        console.error('Error deleting property:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete property",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Property deleted successfully"
+      });
+      
+      fetchProperties();
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive"
+      });
+    }
+  };
 
   const totalProperties = properties.length;
-  const availableProperties = properties.filter(p => p.status === "available").length;
-  const totalViews = properties.reduce((sum, p) => sum + p.views, 0);
-  const totalInquiries = properties.reduce((sum, p) => sum + p.inquiries, 0);
+  const availableProperties = properties.filter(p => p.is_available).length;
+  const rentedProperties = properties.filter(p => !p.is_available).length;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800';
-      case 'rented':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusColor = (status: boolean) => {
+    return status 
+      ? 'bg-green-100 text-green-800 border-green-200'
+      : 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'available':
-        return <CheckCircle className="h-4 w-4" />;
-      case 'rented':
-        return <Users className="h-4 w-4" />;
-      case 'pending':
-        return <AlertCircle className="h-4 w-4" />;
-      default:
-        return null;
-    }
+  const getStatusIcon = (status: boolean) => {
+    return status ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />;
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -88,7 +202,7 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProperties}</div>
-            <p className="text-xs text-muted-foreground">Active listings</p>
+            <p className="text-xs text-muted-foreground">Your listings</p>
           </CardContent>
         </Card>
 
@@ -105,23 +219,25 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Rented</CardTitle>
+            <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalViews}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-2xl font-bold">{rentedProperties}</div>
+            <p className="text-xs text-muted-foreground">Occupied units</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inquiries</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalInquiries}</div>
-            <p className="text-xs text-muted-foreground">Pending responses</p>
+            <div className="text-2xl font-bold">
+              KSh {properties.filter(p => !p.is_available).reduce((sum, p) => sum + p.price, 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">From rented properties</p>
           </CardContent>
         </Card>
       </div>
@@ -134,10 +250,20 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
-            <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Property
-            </Button>
+            <Dialog open={showPropertyForm} onOpenChange={setShowPropertyForm}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Property
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Property</DialogTitle>
+                </DialogHeader>
+                <PropertyForm onSuccess={handlePropertyCreated} />
+              </DialogContent>
+            </Dialog>
             <Button variant="outline">
               <MessageSquare className="h-4 w-4 mr-2" />
               View Messages
@@ -158,20 +284,103 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
       <Tabs defaultValue="all" className="space-y-4">
         <div className="flex items-center justify-between">
           <TabsList>
-            <TabsTrigger value="all">All Properties</TabsTrigger>
-            <TabsTrigger value="available">Available</TabsTrigger>
-            <TabsTrigger value="rented">Rented</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="all">All Properties ({totalProperties})</TabsTrigger>
+            <TabsTrigger value="available">Available ({availableProperties})</TabsTrigger>
+            <TabsTrigger value="rented">Rented ({rentedProperties})</TabsTrigger>
           </TabsList>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Property
-          </Button>
+          <Dialog open={showPropertyForm} onOpenChange={setShowPropertyForm}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Property
+              </Button>
+            </DialogTrigger>
+          </Dialog>
         </div>
 
         <TabsContent value="all" className="space-y-4">
+          {properties.length === 0 ? (
+            <div className="text-center py-12">
+              <Home className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No properties yet</h3>
+              <p className="text-gray-600 mb-4">Start by adding your first property listing</p>
+              <Dialog open={showPropertyForm} onOpenChange={setShowPropertyForm}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Property
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {properties.map((property) => (
+                <Card key={property.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex space-x-4">
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
+                          <Home className="h-8 w-8 text-purple-500" />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="font-semibold text-lg">{property.title}</h3>
+                          <p className="text-gray-600">{property.location}</p>
+                          <p className="font-medium text-green-600">
+                            KSh {property.price.toLocaleString()}/month
+                          </p>
+                          <Badge className={`${getStatusColor(property.is_available)} capitalize`}>
+                            {getStatusIcon(property.is_available)}
+                            <span className="ml-1">{property.is_available ? 'Available' : 'Rented'}</span>
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right space-y-2">
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Eye className="h-4 w-4 mr-1" />
+                            0 views
+                          </div>
+                          <div className="flex items-center">
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            0 inquiries
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => togglePropertyAvailability(property.id, property.is_available)}
+                          >
+                            {property.is_available ? 'Mark as Rented' : 'Mark as Available'}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => deleteProperty(property.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="available">
           <div className="grid gap-4">
-            {properties.map((property) => (
+            {properties.filter(p => p.is_available).map((property) => (
               <Card key={property.id}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -187,9 +396,9 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                         <p className="font-medium text-green-600">
                           KSh {property.price.toLocaleString()}/month
                         </p>
-                        <Badge className={`${getStatusColor(property.status)} capitalize`}>
-                          {getStatusIcon(property.status)}
-                          <span className="ml-1">{property.status}</span>
+                        <Badge className={`${getStatusColor(property.is_available)} capitalize`}>
+                          {getStatusIcon(property.is_available)}
+                          <span className="ml-1">{property.is_available ? 'Available' : 'Rented'}</span>
                         </Badge>
                       </div>
                     </div>
@@ -219,27 +428,71 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="available">
-          <div className="text-center py-8 text-gray-500">
-            <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>Available properties will appear here</p>
+            {properties.filter(p => p.is_available).length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>No available properties</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="rented">
-          <div className="text-center py-8 text-gray-500">
-            <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>Rented properties will appear here</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="pending">
-          <div className="text-center py-8 text-gray-500">
-            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>Pending properties will appear here</p>
+          <div className="grid gap-4">
+            {properties.filter(p => !p.is_available).map((property) => (
+              <Card key={property.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex space-x-4">
+                      <img 
+                        src={property.images[0]} 
+                        alt={property.title}
+                        className="w-20 h-20 object-cover rounded-lg"
+                      />
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-lg">{property.title}</h3>
+                        <p className="text-gray-600">{property.location}</p>
+                        <p className="font-medium text-green-600">
+                          KSh {property.price.toLocaleString()}/month
+                        </p>
+                        <Badge className={`${getStatusColor(property.is_available)} capitalize`}>
+                          {getStatusIcon(property.is_available)}
+                          <span className="ml-1">{property.is_available ? 'Available' : 'Rented'}</span>
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right space-y-2">
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Eye className="h-4 w-4 mr-1" />
+                          {property.views} views
+                        </div>
+                        <div className="flex items-center">
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          {property.inquiries} inquiries
+                        </div>
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {properties.filter(p => !p.is_available).length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>No rented properties</p>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>

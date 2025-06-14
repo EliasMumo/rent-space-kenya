@@ -1,129 +1,73 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  Search, 
-  MapPin, 
-  Filter, 
-  Star, 
-  Bed, 
-  Bath, 
-  Wifi, 
-  Car, 
-  Shield, 
-  Home,
-  User,
-  LogIn,
-  CheckCircle,
-  TrendingUp,
-  Users,
-  AlertTriangle
-} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
-import AuthModal from "@/components/auth/AuthModal";
+import { AuthModal } from "@/components/auth/AuthModal";
 import UserDashboard from "@/components/dashboard/UserDashboard";
-import PropertyCard from "@/components/properties/PropertyCard";
+import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  Filter,
+  MapPin,
+  Home,
+  Star,
+  Heart,
+  Eye,
+  MessageSquare,
+  CheckCircle,
+  Shield,
+  Users,
+  Bed,
+  Bath,
+  ArrowRight
+} from "lucide-react";
 
 const Index = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Show loading screen while auth is initializing
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <Home className="h-16 w-16 text-purple-400 mx-auto mb-4 animate-pulse" />
-            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-20 animate-ping"></div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">RentKenya</h2>
-          <p className="text-purple-200">Loading your experience...</p>
-        </div>
-      </div>
-    );
-  }
 
   // If user is authenticated, show their dashboard
   if (isAuthenticated && user) {
     return <UserDashboard user={user} />;
   }
 
-  // Sample properties for the landing page
-  const featuredProperties = [
-    {
-      id: 1,
-      title: "Modern 2BR Apartment in Kilimani",
-      location: "Kilimani, Nairobi",
-      price: 55000,
-      bedrooms: 2,
-      bathrooms: 2,
-      images: ["/placeholder.svg"],
-      rating: 4.8,
-      reviews: 24,
-      amenities: ["Wi-Fi", "Parking", "Water", "Security"],
-      available: true
-    },
-    {
-      id: 2,
-      title: "Spacious 3BR House in Karen",
-      location: "Karen, Nairobi",
-      price: 85000,
-      bedrooms: 3,
-      bathrooms: 3,
-      images: ["/placeholder.svg"],
-      rating: 4.9,
-      reviews: 18,
-      amenities: ["Wi-Fi", "Garden", "Parking", "Security"],
-      available: true
-    },
-    {
-      id: 3,
-      title: "1BR Apartment in Westlands",
-      location: "Westlands, Nairobi",
-      price: 35000,
-      bedrooms: 1,
-      bathrooms: 1,
-      images: ["/placeholder.svg"],
-      rating: 4.5,
-      reviews: 12,
-      amenities: ["Wi-Fi", "Parking", "Water"],
-      available: true
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="relative bg-white/95 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 via-transparent to-blue-50/50"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Home className="h-8 w-8 text-purple-600" />
-                <div className="absolute -inset-1 bg-purple-600 rounded-full blur opacity-20"></div>
+                <Home className="h-8 w-8 text-blue-600" />
+                <div className="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20"></div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                 RentKenya
               </span>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <nav className="hidden md:flex items-center space-x-8">
+              <a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Browse Properties</a>
+              <a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">List Property</a>
+              <a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">About</a>
+            </nav>
+            
+            <div className="flex items-center space-x-4">
               <Button 
-                variant="ghost" 
+                variant="outline"
                 onClick={() => {
                   setAuthMode('login');
                   setAuthModalOpen(true);
                 }}
-                className="text-slate-600 hover:text-purple-600 hover:bg-purple-50"
+                className="border-purple-200 hover:bg-purple-50 hover:border-purple-300 text-purple-700"
               >
-                <LogIn className="h-4 w-4 mr-2" />
                 Login
               </Button>
               <Button 
@@ -131,59 +75,54 @@ const Index = () => {
                   setAuthMode('register');
                   setAuthModalOpen(true);
                 }}
-                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <User className="h-4 w-4 mr-2" />
-                Get Started
+                Sign Up
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Safety Disclaimer */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Alert className="border-red-400 bg-red-50/10 backdrop-blur-sm">
-            <AlertTriangle className="h-5 w-5 text-red-200" />
-            <AlertTitle className="text-red-100 font-semibold">Important Safety Notice</AlertTitle>
-            <AlertDescription className="text-red-100">
-              <strong>NEVER pay for a property you haven't physically visited.</strong> Always inspect the property in person before making any payments. Verify the landlord's identity and ownership documents. RentKenya and its owners are not liable for any financial losses resulting from fraudulent transactions.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </section>
-
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-        <div className="absolute inset-0 opacity-50" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/5 via-transparent to-blue-900/5"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Find Your Perfect
-              <span className="block bg-gradient-to-r from-purple-400 via-purple-300 to-purple-400 bg-clip-text text-transparent">
-                Home in Kenya
+              <span className="block bg-gradient-to-r from-purple-600 via-blue-600 to-purple-800 bg-clip-text text-transparent">
+                Rental Home
               </span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Discover verified rental properties across Kenya. Connect directly with trusted landlords 
-              and find your dream home today.
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Discover amazing rental properties across Kenya. From modern apartments to spacious houses, 
+              find your next home with ease and confidence.
             </p>
             
             {/* Search Bar */}
             <div className="max-w-4xl mx-auto mb-12">
-              <Card className="p-6 bg-white/95 backdrop-blur border-0 shadow-2xl">
+              <Card className="p-6 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
-                      <Input
-                        placeholder="Enter location (e.g., Kilimani, Karen, Westlands)"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-12 h-14 text-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500"
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input 
+                        placeholder="Search by location, property type, or keywords..."
+                        className="h-14 pl-12 text-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input 
+                        placeholder="Location (e.g., Kilimani, Nairobi)"
+                        className="h-14 pl-12 text-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                   </div>
@@ -194,153 +133,376 @@ const Index = () => {
                     <Filter className="h-5 w-5 mr-2" />
                     Filters
                   </Button>
-                  <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg">
-                    <Search className="h-5 w-5 mr-2" />
-                    Search Homes
-                  </Button>
                 </div>
               </Card>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-400 mb-2">10,000+</div>
-                <div className="text-slate-300">Verified Properties</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-300 mb-2">50,000+</div>
-                <div className="text-slate-300">Happy Tenants</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-400 mb-2">47</div>
-                <div className="text-slate-300">Counties Covered</div>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg"
+                onClick={() => navigate('/properties')}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Browse Properties
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthModalOpen(true);
+                }}
+                className="px-8 py-3 text-lg border-purple-300 hover:bg-purple-50 hover:border-purple-400 text-purple-700"
+              >
+                View All Properties
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Properties */}
-      <section className="py-20 bg-slate-50">
+      {/* Featured Properties Section */}
+      <section className="py-16 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-800 px-4 py-2">Featured Listings</Badge>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Popular Properties</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Discover the most sought-after rental homes in prime locations across Kenya
-            </p>
-          </div>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            Featured Properties
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Sample Property Cards - Replace with actual data */}
+            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="relative">
+                <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                  <Home className="h-16 w-16 text-purple-400" />
+                </div>
+                <Badge className="absolute top-2 left-2 bg-white/90 text-purple-700">
+                  Apartment
+                </Badge>
+              </div>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg line-clamp-2 hover:text-purple-600 transition-colors">
+                      Modern 2BR Apartment in Kilimani
+                    </h3>
+                    <div className="flex items-center text-gray-600 text-sm mt-1">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      Kilimani, Nairobi
+                    </div>
+                  </div>
 
-          {/* Fraud Prevention Notice */}
-          <div className="mb-12">
-            <Alert className="border-amber-200 bg-amber-50">
-              <Shield className="h-5 w-5 text-amber-600" />
-              <AlertTitle className="text-amber-800">Protect Yourself from Fraud</AlertTitle>
-              <AlertDescription className="text-amber-700">
-                <strong>Before making any payment:</strong> Always visit the property in person, verify the landlord's identity, check ownership documents, and never send money to unverified accounts. Use secure payment methods and get receipts for all transactions.
-              </AlertDescription>
-            </Alert>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => {
-                setAuthMode('register');
-                setAuthModalOpen(true);
-              }}
-              className="px-8 py-3 text-lg border-purple-300 hover:bg-purple-50 hover:border-purple-400 text-purple-700"
-            >
-              View All Properties
-            </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-green-600">
+                      KSh 55,000/month
+                    </div>
+                    <div className="flex items-center space-x-3 text-gray-600">
+                      <div className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        2
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        2
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 text-sm line-clamp-2">
+                    Spacious and modern apartment with great views and amenities.
+                  </p>
+
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-xs">Furnished</Badge>
+                    <Badge variant="outline" className="text-xs">WiFi</Badge>
+                    <Badge variant="outline" className="text-xs">Parking</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarFallback>SC</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">John Doe</p>
+                        <p className="text-xs text-gray-600 flex items-center">
+                          <Phone className="h-3 w-3 mr-1" />
+                          +254 712 345678
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Contact
+                    </Button>
+                    <Button size="sm" className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="relative">
+                <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                  <Home className="h-16 w-16 text-purple-400" />
+                </div>
+                <Badge className="absolute top-2 left-2 bg-white/90 text-purple-700">
+                  House
+                </Badge>
+              </div>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg line-clamp-2 hover:text-purple-600 transition-colors">
+                      Spacious 3BR House in Karen
+                    </h3>
+                    <div className="flex items-center text-gray-600 text-sm mt-1">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      Karen, Nairobi
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-green-600">
+                      KSh 85,000/month
+                    </div>
+                    <div className="flex items-center space-x-3 text-gray-600">
+                      <div className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        3
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        2.5
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 text-sm line-clamp-2">
+                    Beautiful house with a large garden and secure compound.
+                  </p>
+
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-xs">Pet Friendly</Badge>
+                    <Badge variant="outline" className="text-xs">Parking</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarFallback>JD</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">Jane Smith</p>
+                        <p className="text-xs text-gray-600 flex items-center">
+                          <Phone className="h-3 w-3 mr-1" />
+                          +254 722 222222
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Contact
+                    </Button>
+                    <Button size="sm" className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="relative">
+                <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                  <Home className="h-16 w-16 text-purple-400" />
+                </div>
+                <Badge className="absolute top-2 left-2 bg-white/90 text-purple-700">
+                  Studio
+                </Badge>
+              </div>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg line-clamp-2 hover:text-purple-600 transition-colors">
+                      Cozy Studio Apartment in Westlands
+                    </h3>
+                    <div className="flex items-center text-gray-600 text-sm mt-1">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      Westlands, Nairobi
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-green-600">
+                      KSh 30,000/month
+                    </div>
+                    <div className="flex items-center space-x-3 text-gray-600">
+                      <div className="flex items-center">
+                        <Bed className="h-4 w-4 mr-1" />
+                        1
+                      </div>
+                      <div className="flex items-center">
+                        <Bath className="h-4 w-4 mr-1" />
+                        1
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 text-sm line-clamp-2">
+                    Compact and well-maintained studio apartment in a prime location.
+                  </p>
+
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-xs">WiFi</Badge>
+                    <Badge variant="outline" className="text-xs">Parking</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarFallback>BW</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">Bob Williams</p>
+                        <p className="text-xs text-gray-600 flex items-center">
+                          <Phone className="h-3 w-3 mr-1" />
+                          +254 733 333333
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Contact
+                    </Button>
+                    <Button size="sm" className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-20">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-800 px-4 py-2">Why Choose Us</Badge>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">The RentKenya Advantage</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Experience the most trusted and efficient way to find rental properties in Kenya
-            </p>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Why Choose RentKenya?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="text-center">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mx-auto mb-4">
+                <Search className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Extensive Property Listings
+              </h3>
+              <p className="text-gray-600">
+                Browse thousands of verified properties across Kenya.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="text-center">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mx-auto mb-4">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Verified Landlords
+              </h3>
+              <p className="text-gray-600">
+                We ensure all landlords are verified for your peace of mind.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="text-center">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-purple-100 mx-auto mb-4">
+                <Heart className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Personalized Experience
+              </h3>
+              <p className="text-gray-600">
+                Find properties tailored to your specific needs and preferences.
+              </p>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <div className="relative mx-auto w-16 h-16 mb-4">
-                  <Shield className="h-16 w-16 text-green-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute inset-0 bg-green-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                </div>
-                <CardTitle className="text-2xl text-slate-900">Verified Properties</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Every property is thoroughly verified by our expert team to ensure quality, 
-                  authenticity, and your peace of mind.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <div className="relative mx-auto w-16 h-16 mb-4">
-                  <Users className="h-16 w-16 text-purple-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute inset-0 bg-purple-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                </div>
-                <CardTitle className="text-2xl text-slate-900">Direct Connection</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  Connect directly with verified property owners. No middlemen, 
-                  no hidden fees - just transparent communication.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <div className="relative mx-auto w-16 h-16 mb-4">
-                  <MapPin className="h-16 w-16 text-purple-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute inset-0 bg-purple-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                </div>
-                <CardTitle className="text-2xl text-slate-900">Nationwide Coverage</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-600 text-lg leading-relaxed">
-                  From Nairobi to Mombasa, Kisumu to Eldoret - find quality rental 
-                  properties in every major city and town across Kenya.
-                </CardDescription>
-              </CardContent>
-            </Card>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-16 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Trusted By Thousands
+          </h2>
+          <div className="flex justify-center items-center space-x-8 md:space-x-16">
+            {/* Logo 1 */}
+            <div>
+              <img
+                src="https://via.placeholder.com/120x60"
+                alt="Company Logo"
+                className="h-12 w-auto grayscale opacity-70 hover:opacity-100 transition-opacity duration-200"
+              />
+            </div>
+
+            {/* Logo 2 */}
+            <div>
+              <img
+                src="https://via.placeholder.com/120x60"
+                alt="Company Logo"
+                className="h-12 w-auto grayscale opacity-70 hover:opacity-100 transition-opacity duration-200"
+              />
+            </div>
+
+            {/* Logo 3 */}
+            <div>
+              <img
+                src="https://via.placeholder.com/120x60"
+                alt="Company Logo"
+                className="h-12 w-auto grayscale opacity-70 hover:opacity-100 transition-opacity duration-200"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 py-20">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-white mb-6">
+      <section className="py-20 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-400 via-blue-400 to-purple-500"></div>
+        
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Find Your Dream Home?
           </h2>
-          <p className="text-xl text-purple-100 mb-8 leading-relaxed">
-            Join thousands of satisfied tenants who found their perfect rental through RentKenya. 
-            Start your journey today - it's completely free!
+          <p className="text-xl text-purple-100 mb-8">
+            Join thousands of satisfied renters who found their perfect home through RentKenya
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              size="lg" 
+              size="lg"
               onClick={() => {
                 setAuthMode('register');
                 setAuthModalOpen(true);
@@ -350,53 +512,106 @@ const Index = () => {
               Start Searching Now
             </Button>
             <Button 
-              size="lg" 
-              onClick={() => {
-                setAuthMode('login');
-                setAuthModalOpen(true);
-              }}
-              className="bg-purple-800 border border-purple-500 text-white hover:bg-purple-700 hover:border-purple-400 px-8 py-4 text-lg font-semibold shadow-lg"
+              variant="outline" 
+              size="lg"
+              className="border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg font-semibold"
+              onClick={() => navigate('/properties')}
             >
-              Already Have an Account?
+              Browse Properties
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Disclaimer Footer */}
-      <section className="bg-slate-800 text-slate-300 py-12">
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Column 1 */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Important Disclaimer</h3>
-              <p className="text-slate-400 leading-relaxed mb-4">
-                RentKenya serves as a platform connecting property owners and potential tenants. We are not responsible for any fraudulent activities, misrepresentations, or financial losses that may occur during property transactions.
-              </p>
-              <p className="text-slate-400 leading-relaxed">
-                Users are solely responsible for verifying property details, landlord credentials, and conducting due diligence before entering into any rental agreements or making payments.
+              <h4 className="text-lg font-semibold text-white mb-4">
+                RentKenya
+              </h4>
+              <p>
+                Your one-stop platform for finding the perfect rental property in Kenya.
               </p>
             </div>
+
+            {/* Column 2 */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Stay Safe</h3>
-              <ul className="text-slate-400 space-y-2">
-                <li>• Always inspect properties physically before payment</li>
-                <li>• Verify landlord identity and ownership documents</li>
-                <li>• Use secure payment methods with proper receipts</li>
-                <li>• Report suspicious listings or activities immediately</li>
-                <li>• Never share personal financial information unsolicited</li>
+              <h4 className="text-lg font-semibold text-white mb-4">
+                Quick Links
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Browse Properties
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    List Your Property
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact Us
+                  </a>
+                </li>
               </ul>
             </div>
+
+            {/* Column 3 */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">
+                Contact Information
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <p>Email: info@rentkenya.com</p>
+                </li>
+                <li>
+                  <p>Phone: +254 700 000000</p>
+                </li>
+                <li>
+                  <p>Address: Nairobi, Kenya</p>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4 */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">
+                Stay Connected
+              </h4>
+              <div className="flex space-x-4">
+                <a href="#" className="hover:text-white transition-colors">
+                  Facebook
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Twitter
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Instagram
+                </a>
+              </div>
+            </div>
           </div>
-          <div className="border-t border-slate-700 mt-8 pt-8 text-center">
-            <p className="text-slate-500">
-              © 2024 RentKenya. All rights reserved. By using this platform, you agree to our terms of service and acknowledge our liability limitations.
+
+          <div className="mt-12 text-center">
+            <p>
+              &copy; {new Date().getFullYear()} RentKenya. All rights reserved.
             </p>
           </div>
         </div>
-      </section>
+      </footer>
 
-      {/* Auth Modal */}
-      <AuthModal
+      <AuthModal 
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         mode={authMode}

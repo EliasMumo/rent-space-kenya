@@ -100,7 +100,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          caretaker_phone: string | null
           created_at: string | null
+          display_phone_preference: string | null
           email: string
           first_name: string
           id: string
@@ -112,7 +114,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          caretaker_phone?: string | null
           created_at?: string | null
+          display_phone_preference?: string | null
           email: string
           first_name: string
           id: string
@@ -124,7 +128,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          caretaker_phone?: string | null
           created_at?: string | null
+          display_phone_preference?: string | null
           email?: string
           first_name?: string
           id?: string

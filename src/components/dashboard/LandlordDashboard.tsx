@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 import { User } from "@/hooks/useAuth";
 import PropertyForm from "../properties/PropertyForm";
+import MessagesView from "../landlord/MessagesView";
+import AnalyticsView from "../landlord/AnalyticsView";
+import SettingsView from "../landlord/SettingsView";
 
 interface LandlordDashboardProps {
   user: User;
@@ -51,6 +54,7 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [activeQuickAction, setActiveQuickAction] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProperties();
@@ -194,6 +198,49 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
     );
   }
 
+  // Quick Action Dialog Component
+  const QuickActionDialog = () => {
+    if (!activeQuickAction) return null;
+
+    const getDialogContent = () => {
+      switch (activeQuickAction) {
+        case 'messages':
+          return {
+            title: 'Messages',
+            content: <MessagesView landlordId={user.id} />
+          };
+        case 'analytics':
+          return {
+            title: 'Analytics',
+            content: <AnalyticsView landlordId={user.id} />
+          };
+        case 'settings':
+          return {
+            title: 'Settings',
+            content: <SettingsView userId={user.id} />
+          };
+        default:
+          return {
+            title: 'Quick Action',
+            content: <div>Content not found</div>
+          };
+      }
+    };
+
+    const { title, content } = getDialogContent();
+
+    return (
+      <Dialog open={!!activeQuickAction} onOpenChange={() => setActiveQuickAction(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+          {content}
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
@@ -267,15 +314,27 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
                 <PropertyForm onSuccess={handlePropertyCreated} />
               </DialogContent>
             </Dialog>
-            <Button variant="outline">
+            
+            <Button 
+              variant="outline"
+              onClick={() => setActiveQuickAction('messages')}
+            >
               <MessageSquare className="h-4 w-4 mr-2" />
               View Messages
             </Button>
-            <Button variant="outline">
+            
+            <Button 
+              variant="outline"
+              onClick={() => setActiveQuickAction('analytics')}
+            >
               <TrendingUp className="h-4 w-4 mr-2" />
               Analytics
             </Button>
-            <Button variant="outline">
+            
+            <Button 
+              variant="outline"
+              onClick={() => setActiveQuickAction('settings')}
+            >
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
@@ -495,6 +554,8 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <QuickActionDialog />
     </div>
   );
 };

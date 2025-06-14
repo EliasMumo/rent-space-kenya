@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -212,7 +211,7 @@ const LandlordDashboard = ({ user }: LandlordDashboardProps) => {
         case 'analytics':
           return {
             title: 'Analytics',
-            content: <AnalyticsView landlordId={user.id} />
+            content: <AnalyticsView userId={user.id} />
           };
         case 'settings':
           return {

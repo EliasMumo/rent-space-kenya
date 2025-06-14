@@ -16,7 +16,10 @@ import {
   Shield, 
   Home,
   User,
-  LogIn
+  LogIn,
+  CheckCircle,
+  TrendingUp,
+  Users
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
@@ -32,11 +35,14 @@ const Index = () => {
   // Show loading screen while auth is initializing
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <Home className="h-16 w-16 text-blue-600 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">RentKenya</h2>
-          <p className="text-gray-600">Loading...</p>
+          <div className="relative">
+            <Home className="h-16 w-16 text-blue-400 mx-auto mb-4 animate-pulse" />
+            <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-20 animate-ping"></div>
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-2">RentKenya</h2>
+          <p className="text-blue-200">Loading your experience...</p>
         </div>
       </div>
     );
@@ -91,25 +97,29 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Home className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <Home className="h-8 w-8 text-blue-600" />
+                <div className="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20"></div>
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                 RentKenya
               </span>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 onClick={() => {
                   setAuthMode('login');
                   setAuthModalOpen(true);
                 }}
+                className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Login
@@ -119,10 +129,10 @@ const Index = () => {
                   setAuthMode('register');
                   setAuthModalOpen(true);
                 }}
-                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <User className="h-4 w-4 mr-2" />
-                Sign Up
+                Get Started
               </Button>
             </div>
           </div>
@@ -130,50 +140,76 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Find Your Perfect Home in Kenya
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100">
-            Discover verified rental properties across Kenya. Connect directly with landlords.
-          </p>
-          
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      placeholder="Enter location (e.g., Kilimani, Karen, Westlands)"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-12 text-lg"
-                    />
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              Find Your Perfect
+              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-blue-300 bg-clip-text text-transparent">
+                Home in Kenya
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Discover verified rental properties across Kenya. Connect directly with trusted landlords 
+              and find your dream home today.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="max-w-4xl mx-auto mb-12">
+              <Card className="p-6 bg-white/95 backdrop-blur border-0 shadow-2xl">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
+                      <Input
+                        placeholder="Enter location (e.g., Kilimani, Karen, Westlands)"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-12 h-14 text-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
+                  <Button variant="outline" className="h-14 px-6 border-slate-200 hover:bg-slate-50">
+                    <Filter className="h-5 w-5 mr-2" />
+                    Filters
+                  </Button>
+                  <Button className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                    <Search className="h-5 w-5 mr-2" />
+                    Search Homes
+                  </Button>
                 </div>
-                <Button variant="outline" className="h-12 px-6">
-                  <Filter className="h-5 w-5 mr-2" />
-                  Filters
-                </Button>
-                <Button className="h-12 px-8 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                  <Search className="h-5 w-5 mr-2" />
-                  Search
-                </Button>
+              </Card>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-400 mb-2">10,000+</div>
+                <div className="text-slate-300">Verified Properties</div>
               </div>
-            </Card>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-400 mb-2">50,000+</div>
+                <div className="text-slate-300">Happy Tenants</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-400 mb-2">47</div>
+                <div className="text-slate-300">Counties Covered</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Featured Properties */}
-      <section className="py-16">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Properties</h2>
-            <p className="text-xl text-gray-600">Discover the most popular rental homes</p>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-blue-100 text-blue-800 px-4 py-2">Featured Listings</Badge>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">Popular Properties</h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Discover the most sought-after rental homes in prime locations across Kenya
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -190,57 +226,109 @@ const Index = () => {
                 setAuthMode('register');
                 setAuthModalOpen(true);
               }}
+              className="px-8 py-3 text-lg border-slate-300 hover:bg-slate-100"
             >
-              View More Properties
+              View All Properties
             </Button>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-16">
+      <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose RentKenya?</h2>
-            <p className="text-xl text-gray-600">The trusted platform for finding rental homes</p>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-purple-100 text-purple-800 px-4 py-2">Why Choose Us</Badge>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">The RentKenya Advantage</h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Experience the most trusted and efficient way to find rental properties in Kenya
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardHeader>
-                <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <CardTitle>Verified Properties</CardTitle>
+            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="relative mx-auto w-16 h-16 mb-4">
+                  <Shield className="h-16 w-16 text-green-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-green-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                </div>
+                <CardTitle className="text-2xl text-slate-900">Verified Properties</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  All properties are verified by our team to ensure quality and authenticity.
+                <CardDescription className="text-slate-600 text-lg leading-relaxed">
+                  Every property is thoroughly verified by our expert team to ensure quality, 
+                  authenticity, and your peace of mind.
                 </CardDescription>
               </CardContent>
             </Card>
             
-            <Card className="text-center">
-              <CardHeader>
-                <User className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                <CardTitle>Direct Contact</CardTitle>
+            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="relative mx-auto w-16 h-16 mb-4">
+                  <Users className="h-16 w-16 text-blue-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                </div>
+                <CardTitle className="text-2xl text-slate-900">Direct Connection</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  Connect directly with property owners without middlemen or hidden fees.
+                <CardDescription className="text-slate-600 text-lg leading-relaxed">
+                  Connect directly with verified property owners. No middlemen, 
+                  no hidden fees - just transparent communication.
                 </CardDescription>
               </CardContent>
             </Card>
             
-            <Card className="text-center">
-              <CardHeader>
-                <MapPin className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                <CardTitle>All Locations</CardTitle>
+            <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="relative mx-auto w-16 h-16 mb-4">
+                  <MapPin className="h-16 w-16 text-purple-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-purple-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                </div>
+                <CardTitle className="text-2xl text-slate-900">Nationwide Coverage</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  Find properties in every major city and town across Kenya.
+                <CardDescription className="text-slate-600 text-lg leading-relaxed">
+                  From Nairobi to Mombasa, Kisumu to Eldoret - find quality rental 
+                  properties in every major city and town across Kenya.
                 </CardDescription>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 py-20">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Find Your Dream Home?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+            Join thousands of satisfied tenants who found their perfect rental through RentKenya. 
+            Start your journey today - it's completely free!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={() => {
+                setAuthMode('register');
+                setAuthModalOpen(true);
+              }}
+              className="bg-white text-blue-600 hover:bg-slate-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Start Searching Now
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => {
+                setAuthMode('login');
+                setAuthModalOpen(true);
+              }}
+              className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold"
+            >
+              Already Have an Account?
+            </Button>
           </div>
         </div>
       </section>

@@ -1,11 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import PropertyCard from "./PropertyCard";
 import PropertyFilters from "./PropertyFilters";
+import PropertyMap from "./PropertyMap";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Home, Grid, Map } from "lucide-react";
 
 interface Property {
   id: string;
@@ -37,6 +38,7 @@ const PropertiesGrid = () => {
   const { toast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -105,6 +107,15 @@ const PropertiesGrid = () => {
     console.log('Search triggered with current filters');
   };
 
+  const handlePropertySelect = (property: Property) => {
+    // Scroll to property in grid view or show details
+    console.log('Selected property:', property);
+    toast({
+      title: "Property Selected",
+      description: `Selected ${property.title}`
+    });
+  };
+
   const filteredProperties = properties.filter(property => {
     const matchesSearch = searchQuery === "" || 
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -171,7 +182,7 @@ const PropertiesGrid = () => {
         onSearch={handleSearch}
       />
 
-      {/* Results Header */}
+      {/* Results Header with View Toggle */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Available Properties</h1>
@@ -179,25 +190,56 @@ const PropertiesGrid = () => {
             {filteredProperties.length} properties found
           </p>
         </div>
+        
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+            className="rounded-md"
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            Grid
+          </Button>
+          <Button
+            variant={viewMode === 'map' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('map')}
+            className="rounded-md"
+          >
+            <Map className="h-4 w-4 mr-2" />
+            Map
+          </Button>
+        </div>
       </div>
 
-      {/* Properties Grid */}
-      {filteredProperties.length === 0 ? (
-        <div className="text-center py-12">
-          <Home className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">No properties found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria</p>
-        </div>
+      {/* Content based on view mode */}
+      {viewMode === 'map' ? (
+        <PropertyMap 
+          properties={filteredProperties}
+          onPropertySelect={handlePropertySelect}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              onContact={handleContact}
-            />
-          ))}
-        </div>
+        <>
+          {/* Properties Grid */}
+          {filteredProperties.length === 0 ? (
+            <div className="text-center py-12">
+              <Home className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No properties found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onContact={handleContact}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

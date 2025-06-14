@@ -80,6 +80,13 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
       return;
     }
 
+    // Make phone number mandatory for landlords
+    if (registerForm.role === 'landlord' && !registerForm.phone.trim()) {
+      setError('Phone number is required for landlords');
+      setIsLoading(false);
+      return;
+    }
+
     const result = await register({
       email: registerForm.email,
       password: registerForm.password,
@@ -177,7 +184,7 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
@@ -242,21 +249,6 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+254 700 000 000"
-                        value={registerForm.phone}
-                        onChange={(e) => setRegisterForm(prev => ({ ...prev, phone: e.target.value }))}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="role">I am a</Label>
                     <Select 
                       value={registerForm.role} 
@@ -282,6 +274,30 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">
+                      Phone Number {registerForm.role === 'landlord' && <span className="text-red-500">*</span>}
+                      {registerForm.role === 'tenant' && <span className="text-gray-500">(Optional)</span>}
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+254 700 000 000"
+                        value={registerForm.phone}
+                        onChange={(e) => setRegisterForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="pl-10"
+                        required={registerForm.role === 'landlord'}
+                      />
+                    </div>
+                    {registerForm.role === 'landlord' && (
+                      <p className="text-sm text-gray-600">
+                        Phone number is required for landlords to enable tenant contact
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -318,7 +334,7 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }: AuthModalProps) => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Creating Account...' : 'Create Account'}

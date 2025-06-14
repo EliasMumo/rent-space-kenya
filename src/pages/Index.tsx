@@ -50,7 +50,7 @@ const Index = () => {
                 <div className="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20"></div>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                RentKenya
+                RentEase
               </span>
             </div>
             
@@ -407,7 +407,7 @@ const Index = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Why Choose RentKenya?
+            Why Choose RentEase?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
@@ -499,7 +499,7 @@ const Index = () => {
             Ready to Find Your Dream Home?
           </h2>
           <p className="text-xl text-purple-100 mb-8">
-            Join thousands of satisfied renters who found their perfect home through RentKenya
+            Join thousands of satisfied renters who found their perfect home through RentEase
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -531,7 +531,7 @@ const Index = () => {
             {/* Column 1 */}
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">
-                RentKenya
+                RentEase
               </h4>
               <p>
                 Your one-stop platform for finding the perfect rental property in Kenya.
@@ -574,7 +574,7 @@ const Index = () => {
               </h4>
               <ul className="space-y-2">
                 <li>
-                  <p>Email: info@rentkenya.com</p>
+                  <p>Email: info@rentease.com</p>
                 </li>
                 <li>
                   <p>Phone: +254 700 000000</p>
@@ -606,7 +606,7 @@ const Index = () => {
 
           <div className="mt-12 text-center">
             <p>
-              &copy; {new Date().getFullYear()} RentKenya. All rights reserved.
+              &copy; {new Date().getFullYear()} RentEase. All rights reserved.
             </p>
           </div>
         </div>

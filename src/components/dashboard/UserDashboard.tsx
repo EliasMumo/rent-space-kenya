@@ -97,7 +97,7 @@ const UserDashboard = ({ user }: UserDashboardProps) => {
                 <div className="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20"></div>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                RentKenya
+                RentEase
               </span>
             </div>
             

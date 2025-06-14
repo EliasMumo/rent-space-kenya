@@ -77,7 +77,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
       
       <CardContent className="p-6">
         <div className="mb-3">
-          <h3 className="font-bold text-lg text-slate-900 line-clamp-1 group-hover:text-blue-600 transition-colors duration-200">
+          <h3 className="font-bold text-lg text-slate-900 line-clamp-1 group-hover:text-purple-600 transition-colors duration-200">
             {property.title}
           </h3>
           <div className="flex items-center gap-1 text-slate-500 mt-1">
@@ -88,12 +88,12 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
         <div className="flex items-center gap-6 mb-4 text-sm text-slate-600">
           <div className="flex items-center gap-1">
-            <Bed className="h-4 w-4 text-blue-500" />
+            <Bed className="h-4 w-4 text-purple-500" />
             <span className="font-medium">{property.bedrooms}</span>
             <span>bed{property.bedrooms > 1 ? 's' : ''}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Bath className="h-4 w-4 text-blue-500" />
+            <Bath className="h-4 w-4 text-purple-500" />
             <span className="font-medium">{property.bathrooms}</span>
             <span>bath{property.bathrooms > 1 ? 's' : ''}</span>
           </div>
@@ -126,7 +126,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
       </CardContent>
 
       <CardFooter className="p-6 pt-0">
-        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 group-hover:scale-[1.02]">
+        <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 group-hover:scale-[1.02]">
           View Details
         </Button>
       </CardFooter>

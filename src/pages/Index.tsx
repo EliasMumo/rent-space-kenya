@@ -37,14 +37,14 @@ const Index = () => {
   // Show loading screen while auth is initializing
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
-            <Home className="h-16 w-16 text-blue-400 mx-auto mb-4 animate-pulse" />
-            <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-20 animate-ping"></div>
+            <Home className="h-16 w-16 text-purple-400 mx-auto mb-4 animate-pulse" />
+            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-20 animate-ping"></div>
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">RentKenya</h2>
-          <p className="text-blue-200">Loading your experience...</p>
+          <p className="text-purple-200">Loading your experience...</p>
         </div>
       </div>
     );
@@ -106,10 +106,10 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Home className="h-8 w-8 text-blue-600" />
-                <div className="absolute -inset-1 bg-blue-600 rounded-full blur opacity-20"></div>
+                <Home className="h-8 w-8 text-purple-600" />
+                <div className="absolute -inset-1 bg-purple-600 rounded-full blur opacity-20"></div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 bg-clip-text text-transparent">
                 RentKenya
               </span>
             </div>
@@ -121,7 +121,7 @@ const Index = () => {
                   setAuthMode('login');
                   setAuthModalOpen(true);
                 }}
-                className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                className="text-slate-600 hover:text-purple-600 hover:bg-purple-50"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Login
@@ -131,7 +131,7 @@ const Index = () => {
                   setAuthMode('register');
                   setAuthModalOpen(true);
                 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <User className="h-4 w-4 mr-2" />
                 Get Started
@@ -155,7 +155,7 @@ const Index = () => {
       </section>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
         <div className="absolute inset-0 opacity-50" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
@@ -163,7 +163,7 @@ const Index = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               Find Your Perfect
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-blue-300 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-purple-400 via-purple-300 to-purple-400 bg-clip-text text-transparent">
                 Home in Kenya
               </span>
             </h1>
@@ -183,7 +183,7 @@ const Index = () => {
                         placeholder="Enter location (e.g., Kilimani, Karen, Westlands)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-12 h-14 text-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                        className="pl-12 h-14 text-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                   </div>
@@ -191,7 +191,7 @@ const Index = () => {
                     <Filter className="h-5 w-5 mr-2" />
                     Filters
                   </Button>
-                  <Button className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                  <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg">
                     <Search className="h-5 w-5 mr-2" />
                     Search Homes
                   </Button>
@@ -202,15 +202,15 @@ const Index = () => {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-400 mb-2">10,000+</div>
+                <div className="text-3xl font-bold text-purple-400 mb-2">10,000+</div>
                 <div className="text-slate-300">Verified Properties</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-400 mb-2">50,000+</div>
+                <div className="text-3xl font-bold text-purple-300 mb-2">50,000+</div>
                 <div className="text-slate-300">Happy Tenants</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-400 mb-2">47</div>
+                <div className="text-3xl font-bold text-purple-400 mb-2">47</div>
                 <div className="text-slate-300">Counties Covered</div>
               </div>
             </div>
@@ -222,7 +222,7 @@ const Index = () => {
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 px-4 py-2">Featured Listings</Badge>
+            <Badge className="mb-4 bg-purple-100 text-purple-800 px-4 py-2">Featured Listings</Badge>
             <h2 className="text-4xl font-bold text-slate-900 mb-4">Popular Properties</h2>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
               Discover the most sought-after rental homes in prime locations across Kenya
@@ -293,8 +293,8 @@ const Index = () => {
             <Card className="text-center group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
               <CardHeader className="pb-4">
                 <div className="relative mx-auto w-16 h-16 mb-4">
-                  <Users className="h-16 w-16 text-blue-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute inset-0 bg-blue-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                  <Users className="h-16 w-16 text-purple-600 mx-auto group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-purple-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 </div>
                 <CardTitle className="text-2xl text-slate-900">Direct Connection</CardTitle>
               </CardHeader>
@@ -326,12 +326,12 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 py-20">
+      <section className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Find Your Dream Home?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+          <p className="text-xl text-purple-100 mb-8 leading-relaxed">
             Join thousands of satisfied tenants who found their perfect rental through RentKenya. 
             Start your journey today - it's completely free!
           </p>
@@ -342,7 +342,7 @@ const Index = () => {
                 setAuthMode('register');
                 setAuthModalOpen(true);
               }}
-              className="bg-white text-blue-600 hover:bg-slate-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-white text-purple-600 hover:bg-slate-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Start Searching Now
             </Button>
@@ -353,7 +353,7 @@ const Index = () => {
                 setAuthMode('login');
                 setAuthModalOpen(true);
               }}
-              className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold"
+              className="border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg font-semibold"
             >
               Already Have an Account?
             </Button>

@@ -1,90 +1,73 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Eye, MessageSquare, Calendar, BarChart3 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  TrendingUp, 
+  Eye, 
+  MessageSquare, 
+  Heart,
+  Home,
+  MapPin,
+  Bed,
+  Bath,
+  Calendar
+} from "lucide-react";
 
 interface Property {
   id: string;
   title: string;
-  views?: number;
-  inquiries?: number;
+  description: string;
+  property_type: string;
+  location: string;
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  is_furnished: boolean;
+  is_pet_friendly: boolean;
+  is_available: boolean;
+  amenities: string[];
+  images: string[];
   created_at: string;
-}
-
-interface AnalyticsData {
-  totalViews: number;
-  totalInquiries: number;
-  avgViewsPerProperty: number;
-  topPerformingProperty?: Property;
-  recentActivity: {
-    date: string;
-    views: number;
-    inquiries: number;
-  }[];
+  landlord_id: string;
 }
 
 interface AnalyticsViewProps {
-  landlordId: string;
+  userId: string;
 }
 
-const AnalyticsView = ({ landlordId }: AnalyticsViewProps) => {
+const AnalyticsView = ({ userId }: AnalyticsViewProps) => {
   const { toast } = useToast();
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [landlordId]);
+    fetchProperties();
+  }, [userId]);
 
-  const fetchAnalytics = async () => {
+  const fetchProperties = async () => {
     try {
       setLoading(true);
-      const { data: properties, error } = await supabase
+      const { data, error } = await supabase
         .from('properties')
         .select('*')
-        .eq('landlord_id', landlordId);
+        .eq('landlord_id', userId)
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching analytics:', error);
+        console.error('Error fetching properties:', error);
         toast({
           title: "Error",
-          description: "Failed to load analytics data",
+          description: "Failed to load properties",
           variant: "destructive"
         });
         return;
       }
 
-      if (!properties || properties.length === 0) {
-        setAnalytics(null);
-        return;
-      }
-
-      const totalViews = properties.reduce((sum, p) => sum + (p.views || 0), 0);
-      const totalInquiries = properties.reduce((sum, p) => sum + (p.inquiries || 0), 0);
-      const avgViewsPerProperty = properties.length > 0 ? totalViews / properties.length : 0;
-      
-      const topPerformingProperty = properties.reduce((top, current) => {
-        const currentScore = (current.views || 0) + (current.inquiries || 0) * 2;
-        const topScore = (top?.views || 0) + (top?.inquiries || 0) * 2;
-        return currentScore > topScore ? current : top;
-      }, properties[0]);
-
-      // Generate mock recent activity data (in a real app, this would come from a tracking table)
-      const recentActivity = Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString(),
-        views: Math.floor(Math.random() * 20),
-        inquiries: Math.floor(Math.random() * 5)
-      })).reverse();
-
-      setAnalytics({
-        totalViews,
-        totalInquiries,
-        avgViewsPerProperty,
-        topPerformingProperty,
-        recentActivity
-      });
+      setProperties(data || []);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -99,102 +82,165 @@ const AnalyticsView = ({ landlordId }: AnalyticsViewProps) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-8 bg-gray-200 rounded animate-pulse" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
-  if (!analytics) {
-    return (
-      <div className="text-center py-12">
-        <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-xl font-medium text-gray-900 mb-2">No analytics data yet</h3>
-        <p className="text-gray-600 mb-4">Add properties to start seeing analytics</p>
-        <p className="text-sm text-gray-500">Analytics will show views, inquiries, and performance metrics</p>
-      </div>
-    );
-  }
+  const totalProperties = properties.length;
+  const availableProperties = properties.filter(p => p.is_available).length;
+  const totalRevenue = properties.reduce((sum, property) => sum + property.price, 0);
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Analytics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
+            <Home className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalProperties}</div>
+            <p className="text-xs text-muted-foreground">
+              {availableProperties} available
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Views</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalViews}</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Avg {analytics.avgViewsPerProperty.toFixed(1)} per property
+              Feature coming soon
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Inquiries</CardTitle>
+            <CardTitle className="text-sm font-medium">Inquiries</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalInquiries}</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              {analytics.totalViews > 0 ? ((analytics.totalInquiries / analytics.totalViews) * 100).toFixed(1) : 0}% conversion rate
+              Feature coming soon
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Property</CardTitle>
+            <CardTitle className="text-sm font-medium">Potential Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold truncate">{analytics.topPerformingProperty?.title}</div>
+            <div className="text-2xl font-bold">KSh {totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {analytics.topPerformingProperty?.views || 0} views, {analytics.topPerformingProperty?.inquiries || 0} inquiries
+              Monthly potential
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Property Performance */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Recent Activity (Last 7 Days)
-          </CardTitle>
+          <CardTitle>Your Properties</CardTitle>
+          <CardDescription>
+            {totalProperties > 0 
+              ? `Overview of your ${totalProperties} listed properties`
+              : "You haven't listed any properties yet"
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {analytics.recentActivity.map((day, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">{day.date}</span>
-                <div className="flex space-x-4 text-sm">
-                  <span className="flex items-center">
-                    <Eye className="h-3 w-3 mr-1 text-blue-500" />
-                    {day.views} views
-                  </span>
-                  <span className="flex items-center">
-                    <MessageSquare className="h-3 w-3 mr-1 text-green-500" />
-                    {day.inquiries} inquiries
-                  </span>
+          {totalProperties === 0 ? (
+            <div className="text-center py-12">
+              <Home className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No Properties Listed</h3>
+              <p className="text-gray-600 mb-6">
+                You haven't uploaded any properties yet. Start by adding your first property to see analytics.
+              </p>
+              <Button>
+                <Home className="h-4 w-4 mr-2" />
+                Add Your First Property
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {properties.map((property) => (
+                <div key={property.id} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold">{property.title}</h4>
+                        <Badge variant={property.is_available ? "default" : "secondary"}>
+                          {property.is_available ? "Available" : "Not Available"}
+                        </Badge>
+                        <Badge variant="outline">{property.property_type}</Badge>
+                      </div>
+                      
+                      <div className="flex items-center text-gray-600 text-sm mb-2">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {property.location}
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                        <div className="flex items-center">
+                          <Bed className="h-4 w-4 mr-1" />
+                          {property.bedrooms} beds
+                        </div>
+                        <div className="flex items-center">
+                          <Bath className="h-4 w-4 mr-1" />
+                          {property.bathrooms} baths
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {new Date(property.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      {property.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {property.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-green-600">
+                        KSh {property.price.toLocaleString()}/month
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Views: Coming soon
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Inquiries: Coming soon
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

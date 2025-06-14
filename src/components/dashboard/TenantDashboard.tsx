@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import TenantStats from "./TenantStats";
@@ -10,7 +10,6 @@ interface TenantDashboardProps {
   user: User;
 }
 
-// Define a proper interface for the Property type used in this component
 interface Property {
   id: string;
   title: string;
@@ -29,98 +28,88 @@ interface Property {
   landlord_id: string;
 }
 
+interface DashboardState {
+  savedProperties: Property[];
+  suggestedProperties: Property[];
+  unreadMessagesCount: number;
+  loading: boolean;
+}
+
 const TenantDashboard = ({ user }: TenantDashboardProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
-  const [suggestedProperties, setSuggestedProperties] = useState<Property[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [recentSearches] = useState<string[]>([]);
+  const [dashboardState, setDashboardState] = useState<DashboardState>({
+    savedProperties: [],
+    suggestedProperties: [],
+    unreadMessagesCount: 0,
+    loading: true,
+  });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [user.id]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      setLoading(true);
+      setDashboardState(prev => ({ ...prev, loading: true }));
       
-      // Fetch saved properties (favorites)
-      const { data: favorites, error: favoritesError } = await supabase
-        .from('favorites')
-        .select(`
-          property_id,
-          properties (
-            id,
-            title,
-            description,
-            property_type,
-            location,
-            price,
-            bedrooms,
-            bathrooms,
-            is_furnished,
-            is_pet_friendly,
-            is_available,
-            amenities,
-            images,
-            created_at,
-            landlord_id
-          )
-        `)
-        .eq('user_id', user.id);
+      const [favoritesResult, messagesResult, propertiesResult] = await Promise.all([
+        // Fetch saved properties (favorites)
+        supabase
+          .from('favorites')
+          .select(`
+            property_id,
+            properties (
+              id, title, description, property_type, location, price,
+              bedrooms, bathrooms, is_furnished, is_pet_friendly, is_available,
+              amenities, images, created_at, landlord_id
+            )
+          `)
+          .eq('user_id', user.id),
 
-      if (favoritesError) {
-        console.error('Error fetching favorites:', favoritesError);
-      } else {
-        const savedProps = favorites?.map(fav => fav.properties).filter(Boolean) || [];
-        setSavedProperties(savedProps as Property[]);
-      }
+        // Fetch unread messages count
+        supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('receiver_id', user.id)
+          .eq('is_read', false),
 
-      // Fetch unread messages count
-      const { data: messages, error: messagesError } = await supabase
-        .from('messages')
-        .select('id')
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
+        // Fetch suggested properties
+        supabase
+          .from('properties')
+          .select('*')
+          .eq('is_available', true)
+          .limit(6)
+      ]);
 
-      if (messagesError) {
-        console.error('Error fetching unread messages:', messagesError);
-      } else {
-        setUnreadMessagesCount(messages?.length || 0);
-      }
+      const savedProps = favoritesResult.data?.map(fav => fav.properties).filter(Boolean) as Property[] || [];
+      const unreadCount = messagesResult.count || 0;
+      
+      // Filter out properties that are already saved by the user
+      const favoritePropertyIds = favoritesResult.data?.map(fav => fav.property_id) || [];
+      const suggested = propertiesResult.data?.filter(prop => 
+        !favoritePropertyIds.includes(prop.id)
+      ) as Property[] || [];
 
-      // Fetch suggested properties (available properties that are not favorited by user)
-      const { data: allProperties, error: propertiesError } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('is_available', true)
-        .limit(6);
-
-      if (propertiesError) {
-        console.error('Error fetching properties:', propertiesError);
-      } else {
-        // Filter out properties that are already saved by the user
-        const favoritePropertyIds = favorites?.map(fav => fav.property_id) || [];
-        const suggested = allProperties?.filter(prop => 
-          !favoritePropertyIds.includes(prop.id)
-        ) || [];
-        setSuggestedProperties(suggested as Property[]);
-      }
+      setDashboardState({
+        savedProperties: savedProps,
+        suggestedProperties: suggested,
+        unreadMessagesCount: unreadCount,
+        loading: false,
+      });
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+      setDashboardState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   return (
     <div className="space-y-6">
       <TenantStats 
-        savedPropertiesCount={savedProperties.length}
+        savedPropertiesCount={dashboardState.savedProperties.length}
         recentSearchesCount={recentSearches.length}
-        unreadMessagesCount={unreadMessagesCount}
+        unreadMessagesCount={dashboardState.unreadMessagesCount}
       />
 
       <TenantSearchSection 
@@ -130,9 +119,9 @@ const TenantDashboard = ({ user }: TenantDashboardProps) => {
       />
 
       <TenantPropertyTabs 
-        savedProperties={savedProperties}
-        suggestedProperties={suggestedProperties}
-        loading={loading}
+        savedProperties={dashboardState.savedProperties}
+        suggestedProperties={dashboardState.suggestedProperties}
+        loading={dashboardState.loading}
       />
     </div>
   );

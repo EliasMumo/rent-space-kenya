@@ -1,4 +1,5 @@
 
+import { memo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,7 +30,41 @@ interface TenantPropertyTabsProps {
   loading: boolean;
 }
 
-const TenantPropertyTabs = ({ savedProperties, suggestedProperties, loading }: TenantPropertyTabsProps) => {
+interface EmptyStateProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+}
+
+const EmptyState = memo(({ icon: Icon, title, description }: EmptyStateProps) => (
+  <div className="text-center py-8 text-gray-500">
+    <Icon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+    <p>{title}</p>
+    <p className="text-sm">{description}</p>
+  </div>
+));
+
+EmptyState.displayName = 'EmptyState';
+
+const LoadingState = memo(() => (
+  <div className="text-center py-8">
+    <p>Loading properties...</p>
+  </div>
+));
+
+LoadingState.displayName = 'LoadingState';
+
+const PropertyGrid = memo(({ properties }: { properties: Property[] }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {properties.map((property) => (
+      <PropertyCard key={property.id} property={property} />
+    ))}
+  </div>
+));
+
+PropertyGrid.displayName = 'PropertyGrid';
+
+const TenantPropertyTabs = memo(({ savedProperties, suggestedProperties, loading }: TenantPropertyTabsProps) => {
   return (
     <Tabs defaultValue="suggested" className="space-y-4">
       <TabsList>
@@ -44,21 +79,15 @@ const TenantPropertyTabs = ({ savedProperties, suggestedProperties, loading }: T
           <Button variant="outline" size="sm">View All</Button>
         </div>
         {loading ? (
-          <div className="text-center py-8">
-            <p>Loading properties...</p>
-          </div>
+          <LoadingState />
         ) : suggestedProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {suggestedProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          <PropertyGrid properties={suggestedProperties} />
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Home className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No properties available at the moment</p>
-            <p className="text-sm">Check back later for new listings</p>
-          </div>
+          <EmptyState 
+            icon={Home}
+            title="No properties available at the moment"
+            description="Check back later for new listings"
+          />
         )}
       </TabsContent>
 
@@ -68,21 +97,15 @@ const TenantPropertyTabs = ({ savedProperties, suggestedProperties, loading }: T
           <Badge variant="secondary">{savedProperties.length} saved</Badge>
         </div>
         {loading ? (
-          <div className="text-center py-8">
-            <p>Loading saved properties...</p>
-          </div>
+          <LoadingState />
         ) : savedProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          <PropertyGrid properties={savedProperties} />
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Heart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No saved properties yet</p>
-            <p className="text-sm">Start browsing and save properties you like</p>
-          </div>
+          <EmptyState 
+            icon={Heart}
+            title="No saved properties yet"
+            description="Start browsing and save properties you like"
+          />
         )}
       </TabsContent>
 
@@ -91,14 +114,16 @@ const TenantPropertyTabs = ({ savedProperties, suggestedProperties, loading }: T
           <h3 className="text-lg font-semibold">Recently Viewed</h3>
           <Button variant="outline" size="sm">Clear History</Button>
         </div>
-        <div className="text-center py-8 text-gray-500">
-          <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No recently viewed properties</p>
-          <p className="text-sm">Properties you view will appear here</p>
-        </div>
+        <EmptyState 
+          icon={Calendar}
+          title="No recently viewed properties"
+          description="Properties you view will appear here"
+        />
       </TabsContent>
     </Tabs>
   );
-};
+});
+
+TenantPropertyTabs.displayName = 'TenantPropertyTabs';
 
 export default TenantPropertyTabs;

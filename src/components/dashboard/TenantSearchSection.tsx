@@ -1,4 +1,5 @@
 
+import { memo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,15 @@ interface TenantSearchSectionProps {
   recentSearches: string[];
 }
 
-const TenantSearchSection = ({ searchQuery, setSearchQuery, recentSearches }: TenantSearchSectionProps) => {
+const TenantSearchSection = memo(({ searchQuery, setSearchQuery, recentSearches }: TenantSearchSectionProps) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, [setSearchQuery]);
+
+  const handleRecentSearchClick = useCallback((search: string) => {
+    setSearchQuery(search);
+  }, [setSearchQuery]);
+
   return (
     <Card>
       <CardHeader>
@@ -26,7 +35,7 @@ const TenantSearchSection = ({ searchQuery, setSearchQuery, recentSearches }: Te
               <Input
                 placeholder="Enter location (e.g., Kilimani, Karen, Westlands)"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="pl-10"
               />
             </div>
@@ -41,13 +50,17 @@ const TenantSearchSection = ({ searchQuery, setSearchQuery, recentSearches }: Te
           </Button>
         </div>
 
-        {/* Recent Searches */}
         {recentSearches.length > 0 && (
           <div>
             <p className="text-sm font-medium mb-2">Recent Searches:</p>
             <div className="flex flex-wrap gap-2">
               {recentSearches.map((search, index) => (
-                <Badge key={index} variant="secondary" className="cursor-pointer hover:bg-gray-200">
+                <Badge 
+                  key={`${search}-${index}`} 
+                  variant="secondary" 
+                  className="cursor-pointer hover:bg-gray-200"
+                  onClick={() => handleRecentSearchClick(search)}
+                >
                   {search}
                 </Badge>
               ))}
@@ -57,6 +70,8 @@ const TenantSearchSection = ({ searchQuery, setSearchQuery, recentSearches }: Te
       </CardContent>
     </Card>
   );
-};
+});
+
+TenantSearchSection.displayName = 'TenantSearchSection';
 
 export default TenantSearchSection;

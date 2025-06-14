@@ -18,6 +18,8 @@ import {
   Bell
 } from "lucide-react";
 import { useAuth, User as UserType } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import TenantDashboard from "./TenantDashboard";
 import LandlordDashboard from "./LandlordDashboard";
 import AdminDashboard from "./AdminDashboard";
@@ -28,9 +30,33 @@ interface UserDashboardProps {
 
 const UserDashboard = ({ user }: UserDashboardProps) => {
   const { logout, loading } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  useEffect(() => {
+    fetchUnreadNotifications();
+  }, [user.id]);
+
+  const fetchUnreadNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (error) {
+        console.error('Error fetching unread notifications:', error);
+        return;
+      }
+
+      setUnreadCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -79,7 +105,9 @@ const UserDashboard = ({ user }: UserDashboardProps) => {
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                )}
               </Button>
 
               {/* User Profile */}

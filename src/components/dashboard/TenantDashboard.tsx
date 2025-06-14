@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,8 @@ import {
   Star,
   Bed,
   Bath,
-  Calendar
+  Calendar,
+  Home
 } from "lucide-react";
 import { User } from "@/hooks/useAuth";
 import PropertyCard from "@/components/properties/PropertyCard";

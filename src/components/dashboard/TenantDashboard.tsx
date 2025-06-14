@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,13 +18,14 @@ import {
 } from "lucide-react";
 import { User } from "@/hooks/useAuth";
 import PropertyCard from "@/components/properties/PropertyCard";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TenantDashboardProps {
   user: User;
 }
 
 // Define a proper interface for the Property type used in this component
-interface SampleProperty {
+interface Property {
   id: string;
   title: string;
   description: string;
@@ -44,70 +45,89 @@ interface SampleProperty {
 
 const TenantDashboard = ({ user }: TenantDashboardProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [savedProperties, setSavedProperties] = useState<Property[]>([]);
+  const [suggestedProperties, setSuggestedProperties] = useState<Property[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Sample data with proper Property interface
-  const savedProperties: SampleProperty[] = [
-    {
-      id: "1",
-      title: "Modern 2BR Apartment in Kilimani",
-      description: "Spacious and modern apartment with great views and amenities.",
-      property_type: "apartment",
-      location: "Kilimani, Nairobi",
-      price: 55000,
-      bedrooms: 2,
-      bathrooms: 2,
-      is_furnished: true,
-      is_pet_friendly: false,
-      is_available: true,
-      amenities: ["Wi-Fi", "Parking", "Water", "Security"],
-      images: ["/placeholder.svg"],
-      created_at: new Date().toISOString(),
-      landlord_id: "landlord1"
+  useEffect(() => {
+    fetchDashboardData();
+  }, [user.id]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch saved properties (favorites)
+      const { data: favorites, error: favoritesError } = await supabase
+        .from('favorites')
+        .select(`
+          property_id,
+          properties (
+            id,
+            title,
+            description,
+            property_type,
+            location,
+            price,
+            bedrooms,
+            bathrooms,
+            is_furnished,
+            is_pet_friendly,
+            is_available,
+            amenities,
+            images,
+            created_at,
+            landlord_id
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (favoritesError) {
+        console.error('Error fetching favorites:', favoritesError);
+      } else {
+        const savedProps = favorites?.map(fav => fav.properties).filter(Boolean) || [];
+        setSavedProperties(savedProps as Property[]);
+      }
+
+      // Fetch unread messages count
+      const { data: messages, error: messagesError } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      if (messagesError) {
+        console.error('Error fetching unread messages:', messagesError);
+      } else {
+        setUnreadMessagesCount(messages?.length || 0);
+      }
+
+      // Fetch suggested properties (available properties that are not favorited by user)
+      const { data: allProperties, error: propertiesError } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('is_available', true)
+        .limit(6);
+
+      if (propertiesError) {
+        console.error('Error fetching properties:', propertiesError);
+      } else {
+        // Filter out properties that are already saved by the user
+        const favoritePropertyIds = favorites?.map(fav => fav.property_id) || [];
+        const suggested = allProperties?.filter(prop => 
+          !favoritePropertyIds.includes(prop.id)
+        ) || [];
+        setSuggestedProperties(suggested as Property[]);
+      }
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const recentSearches = [
-    "2BR apartments in Westlands",
-    "Houses in Karen under 80k",
-    "Bedsitter in Kasarani"
-  ];
-
-  const suggestedProperties: SampleProperty[] = [
-    {
-      id: "2",
-      title: "Spacious 3BR House in Karen",
-      description: "Beautiful house with a large garden and secure compound.",
-      property_type: "house",
-      location: "Karen, Nairobi",
-      price: 85000,
-      bedrooms: 3,
-      bathrooms: 3,
-      is_furnished: false,
-      is_pet_friendly: true,
-      is_available: true,
-      amenities: ["Wi-Fi", "Garden", "Parking", "Security"],
-      images: ["/placeholder.svg"],
-      created_at: new Date().toISOString(),
-      landlord_id: "landlord2"
-    },
-    {
-      id: "3",
-      title: "1BR Apartment in Westlands",
-      description: "Compact and well-maintained apartment in a prime location.",
-      property_type: "apartment",
-      location: "Westlands, Nairobi",
-      price: 35000,
-      bedrooms: 1,
-      bathrooms: 1,
-      is_furnished: true,
-      is_pet_friendly: false,
-      is_available: true,
-      amenities: ["Wi-Fi", "Parking", "Water"],
-      images: ["/placeholder.svg"],
-      created_at: new Date().toISOString(),
-      landlord_id: "landlord3"
-    }
-  ];
+  };
 
   return (
     <div className="space-y-6">
@@ -141,7 +161,7 @@ const TenantDashboard = ({ user }: TenantDashboardProps) => {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{unreadMessagesCount}</div>
             <p className="text-xs text-muted-foreground">Unread conversations</p>
           </CardContent>
         </Card>
@@ -204,11 +224,23 @@ const TenantDashboard = ({ user }: TenantDashboardProps) => {
             <h3 className="text-lg font-semibold">Properties You Might Like</h3>
             <Button variant="outline" size="sm">View All</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {suggestedProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <p>Loading properties...</p>
+            </div>
+          ) : suggestedProperties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {suggestedProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Home className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>No properties available at the moment</p>
+              <p className="text-sm">Check back later for new listings</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="saved" className="space-y-4">
@@ -216,11 +248,23 @@ const TenantDashboard = ({ user }: TenantDashboardProps) => {
             <h3 className="text-lg font-semibold">Your Saved Properties</h3>
             <Badge variant="secondary">{savedProperties.length} saved</Badge>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <p>Loading saved properties...</p>
+            </div>
+          ) : savedProperties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Heart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>No saved properties yet</p>
+              <p className="text-sm">Start browsing and save properties you like</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="recent" className="space-y-4">

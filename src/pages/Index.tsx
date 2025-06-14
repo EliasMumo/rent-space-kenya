@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -348,12 +347,11 @@ const Index = () => {
             </Button>
             <Button 
               size="lg" 
-              variant="outline"
               onClick={() => {
                 setAuthMode('login');
                 setAuthModalOpen(true);
               }}
-              className="border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg font-semibold"
+              className="bg-purple-800 border border-purple-500 text-white hover:bg-purple-700 hover:border-purple-400 px-8 py-4 text-lg font-semibold shadow-lg"
             >
               Already Have an Account?
             </Button>

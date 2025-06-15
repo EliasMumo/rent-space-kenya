@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import PropertyMap from "./PropertyMap";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Home, Grid, Map } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Property {
   id: string;
@@ -36,6 +38,7 @@ interface Property {
 
 const PropertiesGrid = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
@@ -46,10 +49,15 @@ const PropertiesGrid = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [moveInDate, setMoveInDate] = useState("");
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [comparison, setComparison] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProperties();
-  }, []);
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
 
   const fetchProperties = async () => {
     try {
@@ -95,11 +103,67 @@ const PropertiesGrid = () => {
     }
   };
 
-  const handleContact = (property: Property) => {
-    toast({
-      title: "Contact Feature",
-      description: "Messaging functionality will be implemented soon!"
-    });
+  const fetchFavorites = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('favorites')
+      .select('property_id')
+      .eq('user_id', user.id);
+    
+    if (data) {
+      setFavorites(new Set(data.map(f => f.property_id)));
+    }
+  };
+
+  const toggleFavorite = async (propertyId: string, isFavorited: boolean) => {
+    if (!user) return;
+
+    if (isFavorited) {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('property_id', propertyId);
+      
+      if (!error) {
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(propertyId);
+          return newSet;
+        });
+      }
+    } else {
+      const { error } = await supabase
+        .from('favorites')
+        .insert({
+          user_id: user.id,
+          property_id: propertyId
+        });
+      
+      if (!error) {
+        setFavorites(prev => new Set([...prev, propertyId]));
+      }
+    }
+  };
+
+  const addToComparison = (propertyId: string) => {
+    if (comparison.length >= 4) {
+      toast({
+        title: "Comparison Limit",
+        description: "You can compare up to 4 properties at once",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!comparison.includes(propertyId)) {
+      setComparison(prev => [...prev, propertyId]);
+      toast({
+        title: "Added to Comparison",
+        description: "Property added to comparison list"
+      });
+    }
   };
 
   const handleSearch = () => {
@@ -234,7 +298,10 @@ const PropertiesGrid = () => {
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  onContact={handleContact}
+                  onToggleFavorite={toggleFavorite}
+                  onAddToComparison={addToComparison}
+                  isFavorited={favorites.has(property.id)}
+                  isInComparison={comparison.includes(property.id)}
                 />
               ))}
             </div>

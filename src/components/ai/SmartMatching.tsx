@@ -1,10 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, TrendingUp, MapPin, Star, Loader } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PropertyCard from "@/components/properties/PropertyCard";
 
@@ -48,14 +46,19 @@ const SmartMatching = ({ onToggleFavorite, onAddToComparison, favorites, compari
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-property-matching', {
-        body: { userId: user.id }
+      const response = await fetch('/api/ai-property-matching', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id })
       });
 
-      if (error) {
-        console.error('Error generating smart matches:', error);
-        return;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
 
       if (data?.matches) {
         setMatchedProperties(data.matches);

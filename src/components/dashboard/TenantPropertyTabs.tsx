@@ -3,8 +3,9 @@ import { memo, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Calendar, Home } from "lucide-react";
+import { Heart, Calendar, Home, Brain } from "lucide-react";
 import PropertyCard from "@/components/properties/PropertyCard";
+import SmartMatching from "@/components/ai/SmartMatching";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -127,12 +128,25 @@ const TenantPropertyTabs = memo(({ savedProperties, suggestedProperties, loading
   };
 
   return (
-    <Tabs defaultValue="suggested" className="space-y-4">
+    <Tabs defaultValue="smart" className="space-y-4">
       <TabsList>
+        <TabsTrigger value="smart" className="flex items-center gap-2">
+          <Brain className="h-4 w-4" />
+          Smart Matches
+        </TabsTrigger>
         <TabsTrigger value="suggested">Suggested Properties</TabsTrigger>
         <TabsTrigger value="saved">Saved Properties</TabsTrigger>
         <TabsTrigger value="recent">Recently Viewed</TabsTrigger>
       </TabsList>
+
+      <TabsContent value="smart" className="space-y-4">
+        <SmartMatching
+          onToggleFavorite={toggleFavorite}
+          onAddToComparison={addToComparison}
+          favorites={favorites}
+          comparison={comparison}
+        />
+      </TabsContent>
 
       <TabsContent value="suggested" className="space-y-4">
         <div className="flex items-center justify-between">

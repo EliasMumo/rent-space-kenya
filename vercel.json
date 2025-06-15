@@ -1,13 +1,11 @@
-
 {
-  "framework": "nextjs",
   "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "https://gnolgoyhqbqilkgaakgj.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdub2xnb3locWJxaWxrZ2Fha2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NDgwOTcsImV4cCI6MjA2NDAyNDA5N30.4Ozwe7-qaRdXGuFq3x2U7oyB6LmpHRAmsPhVlYldzXQ",
-    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdub2xnb3locWJxaWxrZ2Fha2dqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODQ0ODA5NywiZXhwIjoyMDY0MDI0MDk3fQ.Nv9hwRE0zDpV7RSI4soSffWJqoR1Om4JMG9CcNbbb-w",
-    "OPENROUTER_API_KEY": "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"
-  }
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

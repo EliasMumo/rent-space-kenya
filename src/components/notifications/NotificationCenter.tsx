@@ -47,7 +47,11 @@ const NotificationCenter = ({ isOpen, onClose }: NotificationCenterProps) => {
       .limit(20);
 
     if (!error && data) {
-      setNotifications(data);
+      // Type assertion to ensure the type matches our interface
+      setNotifications(data.map(notification => ({
+        ...notification,
+        type: notification.type as 'info' | 'success' | 'warning' | 'error'
+      })));
     }
     setLoading(false);
   };

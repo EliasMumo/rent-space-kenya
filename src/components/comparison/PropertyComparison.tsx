@@ -1,18 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { X, Scale, MapPin, Bed, Bath, Home } from "lucide-react";
+import { X, Scale, MapPin, Bed, Bath, Home, Check, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Property {
   id: string;
   title: string;
+  description: string;
+  property_type: string;
   location: string;
   price: number;
-  property_type: string;
   bedrooms: number;
   bathrooms: number;
   is_furnished: boolean;
@@ -29,60 +29,78 @@ interface PropertyComparisonProps {
 
 const PropertyComparison = ({ propertyIds, onRemoveProperty, onClose }: PropertyComparisonProps) => {
   const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchProperties();
+    if (propertyIds.length > 0) {
+      fetchProperties();
+    }
   }, [propertyIds]);
 
   const fetchProperties = async () => {
-    if (propertyIds.length === 0) return;
-
     setLoading(true);
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .in('id', propertyIds);
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .in('id', propertyIds);
 
-    if (!error && data) {
-      setProperties(data);
+      if (!error && data) {
+        setProperties(data as Property[]);
+      }
+    } catch (error) {
+      console.error('Error fetching properties for comparison:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  const getFeatureValue = (property: Property, feature: string) => {
+    switch (feature) {
+      case 'price':
+        return `KSh ${property.price.toLocaleString()}`;
+      case 'bedrooms':
+        return property.bedrooms;
+      case 'bathrooms':
+        return property.bathrooms;
+      case 'furnished':
+        return property.is_furnished ? 'Yes' : 'No';
+      case 'petFriendly':
+        return property.is_pet_friendly ? 'Yes' : 'No';
+      case 'type':
+        return property.property_type;
+      case 'location':
+        return property.location;
+      default:
+        return '-';
+    }
+  };
+
+  const hasAmenity = (property: Property, amenity: string) => {
+    return property.amenities?.includes(amenity) || false;
+  };
+
+  const allAmenities = [...new Set(properties.flatMap(p => p.amenities || []))];
+
+  const comparisonFeatures = [
+    { key: 'price', label: 'Monthly Rent', icon: Home },
+    { key: 'type', label: 'Property Type', icon: Home },
+    { key: 'location', label: 'Location', icon: MapPin },
+    { key: 'bedrooms', label: 'Bedrooms', icon: Bed },
+    { key: 'bathrooms', label: 'Bathrooms', icon: Bath },
+    { key: 'furnished', label: 'Furnished', icon: Home },
+    { key: 'petFriendly', label: 'Pet Friendly', icon: Home },
+  ];
 
   if (loading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardContent className="p-6">
           <div className="text-center">Loading comparison...</div>
         </CardContent>
       </Card>
     );
   }
-
-  if (properties.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            <Scale className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No properties to compare</p>
-            <p className="text-sm">Add properties to start comparing</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const comparisonRows = [
-    { label: "Property Type", key: "property_type" },
-    { label: "Price", key: "price", format: (value: number) => `KSh ${value.toLocaleString()}/month` },
-    { label: "Location", key: "location" },
-    { label: "Bedrooms", key: "bedrooms" },
-    { label: "Bathrooms", key: "bathrooms" },
-    { label: "Furnished", key: "is_furnished", format: (value: boolean) => value ? "Yes" : "No" },
-    { label: "Pet Friendly", key: "is_pet_friendly", format: (value: boolean) => value ? "Yes" : "No" },
-  ];
 
   return (
     <Card className="w-full">
@@ -95,72 +113,96 @@ const PropertyComparison = ({ propertyIds, onRemoveProperty, onClose }: Property
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
+      
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-2 font-medium">Feature</th>
-                {properties.map((property) => (
-                  <th key={property.id} className="text-left p-2 min-w-[200px]">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="h-24 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center mb-2">
-                            <Home className="h-8 w-8 text-purple-400" />
-                          </div>
-                          <h3 className="font-semibold text-sm line-clamp-2">{property.title}</h3>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onRemoveProperty(property.id)}
-                          className="ml-2"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {comparisonRows.map((row, index) => (
-                <tr key={row.key} className={index % 2 === 0 ? "bg-gray-50" : ""}>
-                  <td className="p-2 font-medium">{row.label}</td>
-                  {properties.map((property) => {
-                    const value = property[row.key as keyof Property];
-                    const displayValue = row.format ? row.format(value as any) : value;
-                    return (
-                      <td key={`${property.id}-${row.key}`} className="p-2">
-                        {displayValue}
-                      </td>
-                    );
-                  })}
-                </tr>
+          <div className="min-w-full">
+            {/* Property Headers */}
+            <div className="grid gap-4 p-6 border-b" style={{ gridTemplateColumns: `200px repeat(${properties.length}, 1fr)` }}>
+              <div className="font-medium">Features</div>
+              {properties.map((property) => (
+                <div key={property.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-sm truncate">{property.title}</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveProperty(property.id)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {property.images && property.images.length > 0 && (
+                    <img
+                      src={property.images[0]}
+                      alt={property.title}
+                      className="w-full h-20 object-cover rounded"
+                    />
+                  )}
+                </div>
               ))}
-              <tr>
-                <td className="p-2 font-medium">Amenities</td>
-                {properties.map((property) => (
-                  <td key={`${property.id}-amenities`} className="p-2">
-                    <div className="flex flex-wrap gap-1">
-                      {property.amenities?.slice(0, 3).map((amenity, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {amenity}
-                        </Badge>
-                      ))}
-                      {property.amenities?.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{property.amenities.length - 3} more
-                        </Badge>
-                      )}
+            </div>
+
+            {/* Comparison Features */}
+            <div className="divide-y">
+              {comparisonFeatures.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={feature.key}
+                    className="grid gap-4 p-4"
+                    style={{ gridTemplateColumns: `200px repeat(${properties.length}, 1fr)` }}
+                  >
+                    <div className="flex items-center gap-2 font-medium text-sm">
+                      <Icon className="h-4 w-4" />
+                      {feature.label}
                     </div>
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+                    {properties.map((property) => (
+                      <div key={property.id} className="text-sm">
+                        {getFeatureValue(property, feature.key)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+
+              {/* Amenities Comparison */}
+              {allAmenities.length > 0 && (
+                <>
+                  <div
+                    className="grid gap-4 p-4 bg-gray-50"
+                    style={{ gridTemplateColumns: `200px repeat(${properties.length}, 1fr)` }}
+                  >
+                    <div className="font-medium text-sm">Amenities</div>
+                    {properties.map((property) => (
+                      <div key={property.id} className="text-sm font-medium">
+                        {property.amenities?.length || 0} amenities
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {allAmenities.map((amenity) => (
+                    <div
+                      key={amenity}
+                      className="grid gap-4 p-4"
+                      style={{ gridTemplateColumns: `200px repeat(${properties.length}, 1fr)` }}
+                    >
+                      <div className="text-sm pl-4">{amenity}</div>
+                      {properties.map((property) => (
+                        <div key={property.id} className="flex items-center">
+                          {hasAmenity(property, amenity) ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Minus className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

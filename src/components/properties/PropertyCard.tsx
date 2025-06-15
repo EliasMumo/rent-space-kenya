@@ -1,15 +1,11 @@
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  MapPin, Home, Bed, Bath, MessageSquare, Eye, Heart, 
-  Scale, Phone, Share2 
-} from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Heart, MapPin, Bed, Bath, Car, Wifi, MessageSquare, Eye, Scale } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import InquiryModal from "@/components/messaging/InquiryModal";
 
 interface Property {
@@ -34,31 +30,34 @@ interface Property {
 
 interface PropertyCardProps {
   property: Property;
-  onToggleFavorite?: (propertyId: string, isFavorited: boolean) => void;
-  onAddToComparison?: (propertyId: string) => void;
-  isFavorited?: boolean;
-  isInComparison?: boolean;
+  onToggleFavorite: (propertyId: string, isFavorited: boolean) => void;
+  onAddToComparison: (propertyId: string) => void;
+  isFavorited: boolean;
+  isInComparison: boolean;
 }
 
 const PropertyCard = ({ 
   property, 
   onToggleFavorite, 
   onAddToComparison,
-  isFavorited = false,
-  isInComparison = false 
+  isFavorited, 
+  isInComparison 
 }: PropertyCardProps) => {
   const { user } = useAuth();
   const [showInquiryModal, setShowInquiryModal] = useState(false);
-  const [landlordInfo, setLandlordInfo] = useState<any>(null);
 
   const handleViewProperty = async () => {
-    // Record property view
-    await supabase.from('property_views').insert({
-      property_id: property.id,
-      user_id: user?.id || null,
-      ip_address: null, // Could get from request if needed
-      user_agent: navigator.userAgent
-    });
+    // Track property view
+    if (user) {
+      await supabase
+        .from('property_views')
+        .insert({
+          property_id: property.id,
+          user_id: user.id,
+          ip_address: null,
+          user_agent: navigator.userAgent
+        });
+    }
 
     // Increment view count
     await supabase.rpc('increment_property_views', {
@@ -66,158 +65,152 @@ const PropertyCard = ({
     });
   };
 
-  const handleContactLandlord = async () => {
-    if (!landlordInfo) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', property.landlord_id)
-        .single();
-      
-      setLandlordInfo(data);
-    }
+  const handleContact = () => {
     setShowInquiryModal(true);
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: property.title,
-          text: `Check out this property: ${property.title} in ${property.location}`,
-          url: window.location.href + `/property/${property.id}`
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      // Fallback to copying to clipboard
-      navigator.clipboard.writeText(window.location.href + `/property/${property.id}`);
+  const getAmenityIcon = (amenity: string) => {
+    switch (amenity.toLowerCase()) {
+      case 'parking':
+        return <Car className="h-3 w-3" />;
+      case 'wifi':
+        return <Wifi className="h-3 w-3" />;
+      default:
+        return null;
     }
   };
 
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
+      <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer">
         <div className="relative">
-          <div 
-            className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center cursor-pointer"
-            onClick={handleViewProperty}
-          >
-            <Home className="h-16 w-16 text-purple-400" />
-          </div>
-          <Badge className="absolute top-2 left-2 bg-white/90 text-purple-700 text-xs">
-            {property.property_type}
-          </Badge>
-          <div className="absolute top-2 right-2 flex gap-1">
-            {user && onToggleFavorite && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="bg-white/90 hover:bg-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavorite(property.id, !isFavorited);
-                }}
-              >
-                <Heart className={`h-4 w-4 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} />
-              </Button>
-            )}
+          {property.images && property.images.length > 0 ? (
+            <img
+              src={property.images[0]}
+              alt={property.title}
+              className="w-full h-48 object-cover rounded-t-lg"
+              onClick={handleViewProperty}
+            />
+          ) : (
+            <div className="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+              <span className="text-gray-400">No image</span>
+            </div>
+          )}
+          
+          <div className="absolute top-2 right-2 flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="bg-white/90 hover:bg-white"
-              onClick={handleShare}
+              className="bg-white/80 hover:bg-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(property.id, isFavorited);
+              }}
             >
-              <Share2 className="h-4 w-4" />
+              <Heart 
+                className={`h-4 w-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+              />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`bg-white/80 hover:bg-white ${isInComparison ? 'bg-blue-100' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToComparison(property.id);
+              }}
+            >
+              <Scale className={`h-4 w-4 ${isInComparison ? 'text-blue-600' : 'text-gray-600'}`} />
             </Button>
           </div>
-          {property.view_count && (
-            <Badge className="absolute bottom-2 left-2 bg-black/70 text-white text-xs">
-              <Eye className="h-3 w-3 mr-1" />
-              {property.view_count} views
+
+          <div className="absolute top-2 left-2">
+            <Badge variant="secondary" className="bg-white/90">
+              {property.property_type}
             </Badge>
+          </div>
+
+          {property.is_furnished && (
+            <div className="absolute bottom-2 left-2">
+              <Badge className="bg-green-500">Furnished</Badge>
+            </div>
           )}
         </div>
-        
+
         <CardContent className="p-4">
-          <div className="space-y-3">
-            <div>
-              <h3 className="font-semibold text-lg line-clamp-2 hover:text-purple-600 transition-colors">
-                {property.title}
-              </h3>
-              <div className="flex items-center text-gray-600 text-sm mt-1">
-                <MapPin className="h-4 w-4 mr-1" />
-                {property.location}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg line-clamp-1">{property.title}</h3>
+            
+            <div className="flex items-center text-gray-600">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span className="text-sm">{property.location}</span>
+            </div>
+
+            <p className="text-gray-600 text-sm line-clamp-2">{property.description}</p>
+
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-1">
+                <Bed className="h-4 w-4" />
+                <span>{property.bedrooms} bed</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Bath className="h-4 w-4" />
+                <span>{property.bathrooms} bath</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            {property.amenities && property.amenities.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {property.amenities.slice(0, 3).map((amenity) => (
+                  <Badge key={amenity} variant="outline" className="text-xs">
+                    {getAmenityIcon(amenity)}
+                    <span className="ml-1">{amenity}</span>
+                  </Badge>
+                ))}
+                {property.amenities.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{property.amenities.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
               <div className="text-2xl font-bold text-green-600">
-                KSh {property.price.toLocaleString()}/month
-              </div>
-              <div className="flex items-center space-x-3 text-gray-600">
-                <div className="flex items-center">
-                  <Bed className="h-4 w-4 mr-1" />
-                  <span className="text-sm">{property.bedrooms}</span>
-                </div>
-                <div className="flex items-center">
-                  <Bath className="h-4 w-4 mr-1" />
-                  <span className="text-sm">{property.bathrooms}</span>
-                </div>
+                KSh {property.price.toLocaleString()}
+                <span className="text-sm font-normal text-gray-600">/month</span>
               </div>
             </div>
 
-            <p className="text-gray-600 text-sm line-clamp-2">
-              {property.description}
-            </p>
-
-            <div className="flex flex-wrap gap-1">
-              {property.amenities?.slice(0, 3).map((amenity, index) => (
-                <Badge key={index} variant="outline" className="text-xs">{amenity}</Badge>
-              ))}
-              {property.amenities?.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{property.amenities.length - 3} more
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 text-sm"
-                onClick={handleContactLandlord}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contact
-              </Button>
-              
-              {user && onAddToComparison && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAddToComparison(property.id)}
-                  disabled={isInComparison}
-                  className="text-sm"
-                >
-                  <Scale className="h-4 w-4 mr-2" />
-                  {isInComparison ? 'Added' : 'Compare'}
-                </Button>
-              )}
-              
-              <Button 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-sm"
-                onClick={handleViewProperty}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View Details
-              </Button>
-            </div>
+            {(property.view_count || property.inquiry_count) && (
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                {property.view_count && (
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    <span>{property.view_count} views</span>
+                  </div>
+                )}
+                {property.inquiry_count && (
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    <span>{property.inquiry_count} inquiries</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
+
+        <CardFooter className="p-4 pt-0 flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={handleViewProperty}>
+            View Details
+          </Button>
+          <Button className="flex-1" onClick={handleContact}>
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Contact
+          </Button>
+        </CardFooter>
       </Card>
 
       <InquiryModal
@@ -229,7 +222,7 @@ const PropertyCard = ({
           landlord_id: property.landlord_id
         }}
         onSuccess={() => {
-          // Could show a success message here
+          console.log('Inquiry sent successfully');
         }}
       />
     </>
